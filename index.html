@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FinTrack — Pencatat Keuangan</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+:root,[data-theme="light"]{
+  --bg:#f7f6f2;--sur:#f9f8f5;--off:#f3f0ec;--bor:#d4d1ca;--div:#dcd9d5;
+  --txt:#28251d;--mut:#7a7974;--inv:#f9f8f4;
+  --pri:#01696f;--prih:#0c4e54;--prhl:#cedcd8;
+  --suc:#437a22;--suchl:#d4dfcc;--err:#a12c7b;--errhl:#e0ced7;
+  --gld:#d19900;--gldhl:#e9e0c6;--blu:#006494;--bluhl:#c6d8e4;
+  --ora:#da7101;--orahl:#e7d7c4;--pur:#7a39bb;--purhl:#dacfde;
+  --sh2:0 4px 12px rgba(0,0,0,.08);--sh3:0 12px 32px rgba(0,0,0,.12);
+  --rsm:.375rem;--rmd:.5rem;--rlg:.75rem;--rxl:1rem;--rfl:9999px;
+  --tr:180ms cubic-bezier(.16,1,.3,1);
+  --font:'Inter','Helvetica Neue',sans-serif;
+  --xs:.8125rem;--sm:.9375rem;--base:1rem;--lg:1.25rem;
+  --s1:.25rem;--s2:.5rem;--s3:.75rem;--s4:1rem;--s5:1.25rem;
+  --s6:1.5rem;--s8:2rem;--s10:2.5rem;--s12:3rem;
+}
+[data-theme="dark"]{
+  --bg:#171614;--sur:#1c1b19;--off:#1d1c1a;--bor:#393836;--div:#262523;
+  --txt:#cdccca;--mut:#797876;--inv:#2b2a28;
+  --pri:#4f98a3;--prih:#227f8b;--prhl:#313b3b;
+  --suc:#6daa45;--suchl:#3a4435;--err:#d163a7;--errhl:#4c3d46;
+  --gld:#e8af34;--gldhl:#4d4332;--blu:#5591c7;--bluhl:#3a4550;
+  --ora:#fdab43;--orahl:#564b3e;--pur:#a86fdf;--purhl:#4e4652;
+  --sh2:0 4px 12px rgba(0,0,0,.3);--sh3:0 12px 32px rgba(0,0,0,.4);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-font-smoothing:antialiased}
+body{font-family:var(--font);font-size:var(--sm);color:var(--txt);background:var(--bg);min-height:100vh}
+button{cursor:pointer;background:none;border:none;font:inherit;color:inherit}
+.btn{display:inline-flex;align-items:center;gap:var(--s2);padding:var(--s2) var(--s4);border-radius:var(--rmd);font-size:var(--sm);font-weight:500;transition:background var(--tr),color var(--tr);white-space:nowrap}
+.btn i{width:14px;height:14px}
+.bp{background:var(--pri);color:var(--inv)}.bp:hover{background:var(--prih)}
+.bg{color:var(--mut);border:1px solid var(--bor)}.bg:hover{background:var(--off);color:var(--txt)}
+.mb{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:var(--s4);backdrop-filter:blur(4px)}
+.mb.hide{display:none}
+.mo{background:var(--sur);border:1px solid var(--bor);border-radius:var(--rxl);padding:var(--s6);width:100%;max-width:420px;box-shadow:var(--sh3);animation:su .2s cubic-bezier(.16,1,.3,1)}
+@keyframes su{from{transform:translateY(12px);opacity:0}to{transform:translateY(0);opacity:1}}
+.mttl{font-size:var(--base);font-weight:700;margin-bottom:var(--s5);display:flex;align-items:center;gap:var(--s2)}
+.mttl i{width:18px;height:18px;color:var(--pri)}
+.fg{display:flex;flex-direction:column;gap:var(--s4)}
+.fgrp{display:flex;flex-direction:column;gap:var(--s1)}
+.fl{font-size:var(--xs);font-weight:600;color:var(--mut)}
+.fi{background:var(--off);border:1px solid var(--bor);border-radius:var(--rmd);padding:var(--s2) var(--s3);font-size:var(--sm);color:var(--txt);width:100%;transition:border-color var(--tr)}
+.fi:focus{outline:none;border-color:var(--pri);box-shadow:0 0 0 3px rgba(79,152,163,.15)}
+.fa{display:flex;gap:var(--s3);justify-content:flex-end;margin-top:var(--s2)}
+.tabs{display:flex;background:var(--off);border-radius:var(--rmd);padding:3px;gap:2px;margin-bottom:var(--s5)}
+.tab{flex:1;padding:var(--s2);border-radius:calc(var(--rmd) - 3px);font-size:var(--sm);font-weight:500;color:var(--mut);cursor:pointer;text-align:center;transition:background var(--tr),color var(--tr)}
+.tab.on{background:var(--sur);color:var(--txt);box-shadow:0 1px 2px rgba(0,0,0,.1);font-weight:600}
+.msg{font-size:var(--xs);padding:var(--s2) var(--s3);border-radius:var(--rmd);display:none;margin-bottom:var(--s3)}
+.msg.show{display:block}
+.err{background:var(--errhl);color:var(--err)}
+.ok{background:var(--suchl);color:var(--suc)}
+nav{display:flex;align-items:center;justify-content:space-between;padding:var(--s4) var(--s8);border-bottom:1px solid var(--bor);background:var(--sur);position:sticky;top:0;z-index:10}
+.logo{display:flex;align-items:center;gap:var(--s3);font-size:var(--base);font-weight:700;text-decoration:none;color:var(--txt)}
+.logo-ic{width:32px;height:32px;background:var(--pri);border-radius:var(--rmd);display:flex;align-items:center;justify-content:center}
+.logo span{color:var(--pri)}
+.nav-r{display:flex;gap:var(--s3);align-items:center}
+.theme-btn{padding:var(--s2);border-radius:var(--rmd);color:var(--mut);transition:background var(--tr)}
+.theme-btn:hover{background:var(--off);color:var(--txt)}
+.hero{display:flex;flex-direction:column;align-items:center;text-align:center;padding:5rem var(--s8) 4rem;gap:var(--s5);max-width:900px;margin:0 auto}
+.badge{display:inline-flex;align-items:center;gap:var(--s2);padding:var(--s1) var(--s4);border-radius:var(--rfl);background:var(--prhl);color:var(--pri);font-size:var(--xs);font-weight:600;border:1px solid rgba(79,152,163,.25)}
+h1{font-size:clamp(2.2rem,5.5vw,4rem);font-weight:800;letter-spacing:-.04em;line-height:1.08}
+h1 span{color:var(--pri)}
+.sub{font-size:var(--base);color:var(--mut);max-width:46ch;line-height:1.65}
+.ctas{display:flex;gap:var(--s3);flex-wrap:wrap;justify-content:center}
+.btnlg{padding:var(--s3) var(--s6);font-size:var(--base)}
+.btnlg i{width:18px;height:18px}
+.feats{padding:2rem var(--s8) 5rem;max-width:1100px;margin:0 auto}
+.ft{text-align:center;font-size:var(--lg);font-weight:700;margin-bottom:var(--s2);letter-spacing:-.02em}
+.fs{text-align:center;color:var(--mut);font-size:var(--sm);margin-bottom:var(--s8)}
+.fg2{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:var(--s4)}
+.fc{background:var(--sur);border:1px solid var(--bor);border-radius:var(--rlg);padding:var(--s5);display:flex;flex-direction:column;gap:var(--s3);transition:box-shadow var(--tr)}
+.fc:hover{box-shadow:var(--sh2)}
+.fic{width:44px;height:44px;border-radius:var(--rmd);display:flex;align-items:center;justify-content:center}
+.fic i{width:22px;height:22px}
+.fn{font-size:var(--sm);font-weight:700}
+.fd{font-size:var(--xs);color:var(--mut);line-height:1.65}
+footer{text-align:center;padding:var(--s8);color:var(--mut);font-size:var(--xs);border-top:1px solid var(--div)}
+@media(max-width:600px){nav,hero,.feats{padding-left:var(--s4);padding-right:var(--s4)}h1{font-size:2rem}}
+</style>
+</head>
+<body>
+
+<div class="mb hide" id="m-auth">
+  <div class="mo">
+    <div class="mttl"><i data-lucide="log-in"></i><span id="auth-ttl">Masuk ke FinTrack</span></div>
+    <div class="tabs">
+      <div class="tab on" id="tab-in" onclick="switchTab('login')">Masuk</div>
+      <div class="tab" id="tab-reg" onclick="switchTab('register')">Daftar</div>
+    </div>
+    <div class="msg err" id="auth-err"></div>
+    <div class="msg ok"  id="auth-ok"></div>
+    <form class="fg" id="form-auth" onsubmit="submitAuth(event)">
+      <div class="fgrp">
+        <label class="fl">Email</label>
+        <input class="fi" id="a-email" type="email" placeholder="email@kamu.com" required autocomplete="email">
+      </div>
+      <div class="fgrp">
+        <label class="fl">Password</label>
+        <input class="fi" id="a-pass" type="password" placeholder="Minimal 8 karakter" required minlength="8" autocomplete="current-password">
+      </div>
+      <div class="fgrp" id="pass-hint" style="display:none">
+        <p style="font-size:var(--xs);color:var(--mut)">⚠️ Harus mengandung huruf kapital dan angka.</p>
+      </div>
+      <div class="fa">
+        <button type="button" class="btn bg" onclick="document.getElementById('m-auth').classList.add('hide')">Batal</button>
+        <button type="submit" class="btn bp" id="auth-btn"><i data-lucide="log-in"></i><span id="auth-btxt">Masuk</span></button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<nav>
+  <a class="logo" href="#">
+    <div class="logo-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></div>
+    Fin<span>Track</span>
+  </a>
+  <div class="nav-r">
+    <button class="theme-btn" onclick="toggleTheme()"><i id="thm-ic" data-lucide="moon" style="width:18px;height:18px;display:block"></i></button>
+    <button class="btn bg" onclick="openAuth('login')">Masuk</button>
+    <button class="btn bp" onclick="openAuth('register')">Daftar Gratis</button>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="badge"><i data-lucide="shield-check" style="width:12px;height:12px"></i>Gratis &amp; Aman</div>
+  <h1>Kelola <span>Keuangan</span><br>Kamu Lebih Cerdas</h1>
+  <p class="sub">Catat pemasukan, pengeluaran, rekening, dan proyeksi keuangan dalam satu tempat. Sinkron di semua device.</p>
+  <div class="ctas">
+    <button class="btn bp btnlg" onclick="openAuth('register')"><i data-lucide="rocket"></i>Mulai Sekarang — Gratis</button>
+    <button class="btn bg btnlg" onclick="openAuth('login')"><i data-lucide="log-in"></i>Sudah punya akun</button>
+  </div>
+</section>
+
+<section class="feats">
+  <h2 class="ft">Semua yang kamu butuhkan</h2>
+  <p class="fs">Fitur lengkap untuk manajemen keuangan pribadi yang lebih teratur</p>
+  <div class="fg2">
+    <div class="fc"><div class="fic" style="background:var(--prhl);color:var(--pri)"><i data-lucide="wallet"></i></div><div class="fn">Multi Rekening &amp; Dompet</div><div class="fd">Kelola bank, e-wallet, dan tunai dalam satu dashboard yang rapi.</div></div>
+    <div class="fc"><div class="fic" style="background:var(--suchl);color:var(--suc)"><i data-lucide="trending-up"></i></div><div class="fn">Proyeksi Keuangan</div><div class="fd">Estimasi saldo akhir bulan berdasarkan pemasukan dan pengeluaran rutin.</div></div>
+    <div class="fc"><div class="fic" style="background:var(--gldhl);color:var(--gld)"><i data-lucide="repeat"></i></div><div class="fn">Transaksi Berulang</div><div class="fd">Set cicilan atau langganan sekali, terhitung otomatis setiap periode.</div></div>
+    <div class="fc"><div class="fic" style="background:var(--bluhl);color:var(--blu)"><i data-lucide="bar-chart-2"></i></div><div class="fn">Laporan Visual</div><div class="fd">Analisis pengeluaran per kategori dan per rekening secara ringkas.</div></div>
+    <div class="fc"><div class="fic" style="background:var(--purhl);color:var(--pur)"><i data-lucide="smartphone"></i></div><div class="fn">Akses Multi Device</div><div class="fd">Data tersimpan di cloud, buka dari HP, laptop, atau tablet kapan saja.</div></div>
+    <div class="fc"><div class="fic" style="background:var(--orahl);color:var(--ora)"><i data-lucide="shield"></i></div><div class="fn">Aman &amp; Terenkripsi</div><div class="fd">Password di-hash dengan bcrypt. Data kamu tidak bisa diakses orang lain.</div></div>
+  </div>
+</section>
+
+<footer>© 2026 FinTrack &nbsp;·&nbsp; Dibuat dengan ❤️ untuk keuangan yang lebih teratur</footer>
+
+<script>
+var API = 'https://fintrack-backend-khaki.vercel.app'; // ← Ganti dengan URL Vercel kamu
+
+function toggleTheme(){
+  var t = document.documentElement.getAttribute('data-theme');
+  var next = t === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  document.getElementById('thm-ic').setAttribute('data-lucide', next === 'dark' ? 'moon' : 'sun');
+  lucide.createIcons();
+}
+function openAuth(mode) {
+  switchTab(mode);
+  document.getElementById('m-auth').classList.remove('hide');
+  setTimeout(function(){ lucide.createIcons(); }, 50);
+}
+function switchTab(mode) {
+  var isLogin = mode === 'login';
+  document.getElementById('tab-in').classList.toggle('on', isLogin);
+  document.getElementById('tab-reg').classList.toggle('on', !isLogin);
+  document.getElementById('auth-ttl').textContent  = isLogin ? 'Masuk ke FinTrack' : 'Daftar FinTrack';
+  var btxt = document.getElementById('auth-btxt');
+    if (btxt) btxt.textContent = isLogin ? 'Masuk' : 'Daftar';
+  document.getElementById('pass-hint').style.display = isLogin ? 'none' : '';
+  document.getElementById('auth-err').classList.remove('show');
+  document.getElementById('auth-ok').classList.remove('show');
+  document.getElementById('m-auth').dataset.mode = mode;
+  lucide.createIcons();
+}
+async function submitAuth(e) {
+  e.preventDefault();
+  var email = document.getElementById('a-email').value.trim();
+  var pass  = document.getElementById('a-pass').value;
+  var mode  = document.getElementById('m-auth').dataset.mode || 'login';
+  var btn   = document.getElementById('auth-btn');
+  var errEl = document.getElementById('auth-err');
+  var okEl  = document.getElementById('auth-ok');
+  errEl.classList.remove('show'); okEl.classList.remove('show');
+  btn.disabled = true; btn.innerHTML = '<i data-lucide="loader"></i><span id="auth-btxt">Memproses...</span>'; lucide.createIcons();
+  try {
+    var res  = await fetch(API + '/api/auth/' + mode, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email, password: pass })
+    });
+    var data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Terjadi kesalahan.');
+    if (mode === 'register') {
+      okEl.textContent = 'Pendaftaran berhasil! Silakan masuk.';
+      okEl.classList.add('show');
+      switchTab('login');
+    } else {
+      localStorage.setItem('ft_token', data.token);
+      localStorage.setItem('ft_user', JSON.stringify(data.user));
+      window.location.href = 'app.html';
+    }
+  } catch(err) {
+    errEl.textContent = err.message;
+    errEl.classList.add('show');
+  }
+  btn.disabled = false;
+  btn.innerHTML = '<i data-lucide="log-in"></i><span id="auth-btxt">' + (mode==='login'?'Masuk':'Daftar') + '</span>';
+  lucide.createIcons();
+}
+(function(){
+  if (localStorage.getItem('ft_token')) window.location.href = 'app.html';
+  lucide.createIcons();
+})();
+</script>
+</body>
+</html>
