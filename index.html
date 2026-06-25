@@ -84,7 +84,19 @@ h1 span{color:var(--pri)}
 .fn{font-size:var(--sm);font-weight:700}
 .fd{font-size:var(--xs);color:var(--mut);line-height:1.65}
 footer{text-align:center;padding:var(--s8);color:var(--mut);font-size:var(--xs);border-top:1px solid var(--div)}
-@media(max-width:600px){nav,hero,.feats{padding-left:var(--s4);padding-right:var(--s4)}h1{font-size:2rem}}
+@media(max-width:600px){
+  nav{padding:var(--s3) var(--s4);gap:var(--s2)}
+  .logo{font-size:var(--sm);gap:var(--s2)}
+  .logo-ic{width:28px;height:28px}
+  .nav-r{gap:var(--s2)}
+  .nav-r .btn{padding:var(--s1) var(--s3);font-size:var(--xs)}
+  .hero{padding:3rem var(--s4) 2.5rem}
+  h1{font-size:clamp(1.75rem,7vw,2.2rem)}
+  .sub{font-size:var(--sm)}
+  .btnlg{padding:var(--s2) var(--s4);font-size:var(--sm)}
+  .feats{padding:1.5rem var(--s4) 3rem}
+  .fg2{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>

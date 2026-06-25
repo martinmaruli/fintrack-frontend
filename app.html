@@ -234,7 +234,7 @@ tbody tr:last-child td{border-bottom:none}
       <input type="hidden" id="eid">
       <div class="fgrp">
         <label class="fl" data-i18n="desc">Description</label>
-        <input class="fi" id="f-desc" placeholder="Contoh: Monthly Salary" required>
+        <input class="fi" id="f-desc" placeholder="e.g. Monthly Salary" data-i18n="placeholder_desc" required>
       </div>
       <div class="fr">
         <div class="fgrp">
@@ -256,7 +256,7 @@ tbody tr:last-child td{border-bottom:none}
       <div class="fgrp" id="f-acc-grp">
         <label class="fl" data-i18n="nav_accounts">Account / Wallet</label>
         <select class="fs" id="f-acc">
-          <option value="">— Pilih akun —</option>
+          <option value="" data-i18n="select_account">— Select account —</option>
         </select>
       </div>
 
@@ -266,8 +266,8 @@ tbody tr:last-child td{border-bottom:none}
           <select class="fs" id="f-cat" onchange="onCatChange()"></select>
         </div>
         <div class="fgrp" id="f-custom-cat-grp" style="display:none">
-          <label class="fl">Category Kustom</label>
-          <input class="fi" id="f-custom-cat" placeholder="Ketik kategori...">
+          <label class="fl" data-i18n="custom_cat">Category Kustom</label>
+          <input class="fi" id="f-custom-cat" placeholder="Type category..." data-i18n="placeholder_cat">
         </div>
         <div class="fgrp">
           <label class="fl" data-i18n="date">Date</label>
@@ -282,38 +282,38 @@ tbody tr:last-child td{border-bottom:none}
       <!-- RECURRING — only for calon -->
       <div class="rsec" id="rec-sec" style="display:none">
         <div class="rtog">
-          <div class="rlbl"><i data-lucide="repeat"></i>Recurrence Otomatis</div>
+          <div class="rlbl"><i data-lucide="repeat"></i><span data-i18n="auto_recurrence">Automatic Recurrence</span></div>
           <label class="tsw"><input type="checkbox" id="f-rec" onchange="onRecChange()"><span class="tsl"></span></label>
         </div>
         <div class="ropts hide" id="rec-opts">
           <div class="fr">
             <div class="fgrp">
-              <label class="fl">Frekuensi</label>
+              <label class="fl" data-i18n="frequency">Frequency</label>
               <select class="fs" id="f-freq" onchange="onFreqChange()">
-                <option value="monthly">Setiap Bulan</option>
-                <option value="custom">Custom (Hari)</option>
+                <option value="monthly" data-i18n="every_month">Every Month</option>
+                <option value="custom" data-i18n="custom_days">Custom (Days)</option>
               </select>
             </div>
             <div class="fgrp" id="f-custom-grp" style="display:none">
-              <label class="fl">Amount Hari</label>
-              <input class="fi" id="f-custom-days" type="number" placeholder="cth: 5" min="1" oninput="updPrev()">
+              <label class="fl" data-i18n="amount_days">Amount Days</label>
+              <input class="fi" id="f-custom-days" type="number" placeholder="e.g. 5" data-i18n="placeholder_cth_5" min="1" oninput="updPrev()">
             </div>
             <div class="fgrp">
-              <label class="fl">Maks Recurrence <span class="fh">(optional)</span></label>
-              <input class="fi" id="f-cnt" type="number" placeholder="cth: 12" min="1" max="360" oninput="updPrev()">
+              <label class="fl"><span data-i18n="max_recurrence">Max Recurrence</span> <span class="fh" data-i18n="optional">(optional)</span></label>
+              <input class="fi" id="f-cnt" type="number" placeholder="e.g. 12" data-i18n="placeholder_cth_12" min="1" max="360" oninput="updPrev()">
             </div>
           </div>
           <div class="fgrp">
-            <label class="fl">Date Berakhir <span class="fh">(optional)</span></label>
+            <label class="fl"><span data-i18n="end_date">End Date</span> <span class="fh" data-i18n="optional">(optional)</span></label>
             <input class="fi" id="f-end" type="date" onchange="updPrev()">
           </div>
-          <div class="rpv" id="rec-prev">Isi opsi di atas untuk preview.</div>
+          <div class="rpv" id="rec-prev" data-i18n="fill_opts_prev">Fill options above for preview.</div>
         </div>
       </div>
 
       <div class="fa">
         <button type="button" class="btn bg" onclick="closeModal('m-trx')" data-i18n="cancel">Cancel</button>
-        <button type="submit" class="btn bp"><i data-lucide="check"></i data-i18n="save">Save</button>
+        <button type="submit" class="btn bp"><i data-lucide="check"></i><span data-i18n="save">Save</span></button>
       </div>
     </form>
   </div>
@@ -326,34 +326,34 @@ tbody tr:last-child td{border-bottom:none}
     <form class="fg" id="form-acc">
       <input type="hidden" id="aeid">
       <div class="fgrp">
-        <label class="fl">Nama Account</label>
-        <input class="fi" id="a-name" placeholder="Contoh: BCA Savings" required>
+        <label class="fl" data-i18n="acc_name">Account Name</label>
+        <input class="fi" id="a-name" placeholder="e.g. BCA Savings" data-i18n="placeholder_acc" required>
       </div>
       <div class="fr">
         <div class="fgrp">
-          <label class="fl">Type</label>
+          <label class="fl" data-i18n="type">Type</label>
           <select class="fs" id="a-type">
-            <option value="bank">Bank</option>
-            <option value="ewallet">E-Wallet</option>
-            <option value="cash">Cash</option>
+            <option value="bank" data-i18n="bank">Bank</option>
+            <option value="ewallet" data-i18n="ewallet">E-Wallet</option>
+            <option value="cash" data-i18n="cash">Cash</option>
           </select>
         </div>
         <div class="fgrp">
-          <label class="fl">Warna</label>
+          <label class="fl" data-i18n="color">Color</label>
           <input class="fi" id="a-color" type="color" value="#4f98a3" style="height:38px;padding:2px 4px;cursor:pointer">
         </div>
       </div>
       <div class="fgrp">
-        <label class="fl">Emoji / Ikon <span class="fh">(1 karakter)</span></label>
+        <label class="fl"><span data-i18n="emoji_icon">Emoji / Icon</span> <span class="fh" data-i18n="one_char">(1 character)</span></label>
         <input class="fi" id="a-emoji" placeholder="🏦" maxlength="2">
       </div>
       <div class="fgrp">
-        <label class="fl">Saldo Awal (Rp)</label>
+        <label class="fl" data-i18n="init_balance">Initial Balance (Rp)</label>
         <input class="fi" id="a-init" type="number" placeholder="0" min="0" value="0">
       </div>
       <div class="fa">
-        <button type="button" class="btn bg" onclick="closeModal('m-acc')">Cancel</button>
-        <button type="submit" class="btn bp"><i data-lucide="check"></i>Save</button>
+        <button type="button" class="btn bg" onclick="closeModal('m-acc')" data-i18n="cancel">Cancel</button>
+        <button type="submit" class="btn bp"><i data-lucide="check"></i><span data-i18n="save">Save</span></button>
       </div>
     </form>
   </div>
@@ -374,7 +374,7 @@ tbody tr:last-child td{border-bottom:none}
     </div>
     <div class="nit on" onclick="gv('dashboard',this)"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></div>
     
-    <div class="nit" onclick="toggleSubmenu('tx-sub')"><i data-lucide="list"></i><span style="flex:1">Transaction</span><i data-lucide="chevron-down" id="tx-chevron" style="width:16px;height:16px"></i></div>
+    <div class="nit" onclick="toggleSubmenu('tx-sub')"><i data-lucide="list"></i><span style="flex:1" data-i18n="nav_transaction">Transaction</span><i data-lucide="chevron-down" id="tx-chevron" style="width:16px;height:16px"></i></div>
     <div id="tx-sub" style="display:none;flex-direction:column;padding-left:var(--s4);gap:2px">
       <div class="nit" onclick="gv('akun',this)"><i data-lucide="credit-card"></i><span>Bank &amp; Wallet</span></div>
       <div class="nit" onclick="gv('income',this)"><i data-lucide="arrow-down-circle"></i><span>Income</span></div>
@@ -403,9 +403,9 @@ tbody tr:last-child td{border-bottom:none}
         </div>
       </div>
       <div class="tb-r">
-        <div class="pts">
-          <button class="pt on" onclick="setPeriod('bulan',this)">This Month</button>
-          <button class="pt" onclick="setPeriod('semua',this)">All</button>
+        <div style="display:flex;gap:var(--s2)">
+          <button class="pt on" onclick="setPeriod('bulan',this)" data-i18n="this_month">This Month</button>
+          <button class="pt" onclick="setPeriod('semua',this)" data-i18n="all">All</button>
         </div>
         <button class="btn bp bsm" onclick="openModalTrx()"><i data-lucide="plus"></i><span data-i18n="add_transaction">Add Transaction</span></button>
         <button class="bic" onclick="toggleLanguage()" aria-label="Toggle language" title="Switch Language" style="display:flex;align-items:center;gap:4px">
@@ -430,7 +430,7 @@ tbody tr:last-child td{border-bottom:none}
         <div>
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--s3)">
             <div style="font-size:var(--sm);font-weight:600" data-i18n="nav_accounts">Accounts &amp; Wallets</div>
-            <button class="btn bg bsm" onclick="gv('akun', document.querySelectorAll('.nit')[1])"><i data-lucide="arrow-right"></i>Lihat All</button>
+            <button class="btn bg bsm" onclick="gv('akun', document.querySelectorAll('.nit')[1])"><i data-lucide="arrow-right"></i><span data-i18n="see_all">See All</span></button>
           </div>
           <div class="acc-grid" id="dash-acc"></div>
         </div>
@@ -447,7 +447,7 @@ tbody tr:last-child td{border-bottom:none}
         </div>
 
         <div class="card">
-          <div class="ch"><div><div class="ct">Recent Transactions</div><div class="cs">Recent activity</div></div></div>
+          <div class="ch"><div><div class="ct" data-i18n="recent_trx">Recent Transactions</div><div class="cs" data-i18n="recent_act">Recent activity</div></div></div>
           <div class="tw"><table><thead><tr><th data-i18n="desc">Description</th><th data-i18n="account">Account</th><th data-i18n="category">Category</th><th data-i18n="type">Type</th><th data-i18n="date">Date</th><th style="text-align:right">Amount</th></tr></thead><tbody id="tb-dash"></tbody></table></div>
         </div>
       </div>
@@ -680,8 +680,8 @@ function addDate(d, freq) {
   return dt.getFullYear() + '-' + String(dt.getMonth()+1).padStart(2,'0') + '-' + String(dt.getDate()).padStart(2,'0');
 }
 function getFreqLbl(f) {
-  if (f === 'monthly') return 'Bulanan';
-  if (f && f.startsWith('custom_')) return 'Tiap ' + f.split('_')[1] + ' Hari';
+  if (f === 'monthly') return t('monthly');
+  if (f && f.startsWith('custom_')) return t('every') + ' ' + f.split('_')[1] + ' ' + t('days');
   return f || '';
 }
 
@@ -716,7 +716,14 @@ function sum(list,type){ var s=0; for(var i=0;i<list.length;i++) if(list[i].type
 // ===== FORMAT =====
 function rp(n){ var neg=n<0,a=Math.abs(n),s='Rp '+a.toLocaleString('id-ID'); return neg?'-'+s:s; }
 function rpf(n){ return 'Rp '+Math.abs(n).toLocaleString('id-ID'); }
-function fd(s){ if(!s)return'-'; var p=s.split('T')[0].split('-'),mm=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des']; return parseInt(p[2])+' '+mm[parseInt(p[1])-1]+' '+p[0]; }
+function fd(s){ 
+  if(!s)return'-'; 
+  var p=s.split('T')[0].split('-');
+  var mmEN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var mmID=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+  var mm = (typeof currentLang !== 'undefined' && currentLang === 'en') ? mmEN : mmID;
+  return parseInt(p[2])+' '+mm[parseInt(p[1])-1]+' '+p[0]; 
+}
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 // ===== CRUD TRANSACTIONS =====
@@ -836,7 +843,7 @@ function editAcc(id) {
   document.getElementById('a-color').value=a.color||'#4f98a3';
   document.getElementById('a-emoji').value=a.emoji||'';
   document.getElementById('a-init').value=a.init||0;
-  document.getElementById('macc-ttl').textContent='Edit Account';
+  document.getElementById('macc-ttl').textContent=t('edit')+' '+t('nav_accounts');
   document.getElementById('m-acc').classList.remove('hide');
   setTimeout(function(){lucide.createIcons();},50);
 }
@@ -844,9 +851,9 @@ function showAccTrx(accId) {
   var a=getAcc(accId); if(!a)return;
   var trxs=DB.filter(function(t){return parseInt(t.accId)===parseInt(accId)&&(t.type==='income'||t.type==='expense');});
   var el=document.getElementById('tb-acc-trx');
-  document.getElementById('acc-trx-title').textContent='Transaksi — '+a.name;
-  document.getElementById('acc-trx-sub').textContent=trxs.length+' transaksi total';
-  if(!trxs.length){el.innerHTML='<tr><td colspan="5"><div class="es" style="padding:var(--s8)"><i data-lucide="inbox"></i><h3>No transactions yet</h3></div></td></tr>';lucide.createIcons();document.getElementById('acc-trx-card').style.display='';return;}
+  document.getElementById('acc-trx-title').textContent=t('nav_transaction')+' — '+a.name;
+  document.getElementById('acc-trx-sub').textContent=trxs.length+' '+t('nav_transaction').toLowerCase()+' total';
+  if(!trxs.length){el.innerHTML='<tr><td colspan="5"><div class="es" style="padding:var(--s8)"><i data-lucide="inbox"></i><h3>'+t('no_trx')+'</h3></div></td></tr>';lucide.createIcons();document.getElementById('acc-trx-card').style.display='';return;}
   el.innerHTML=trxs.slice().sort(function(a,b){return b.date.localeCompare(a.date);}).map(function(t){
     return '<tr><td><strong>'+esc(t.desc)+'</strong></td>'
       +'<td><span class="badge bpri">'+esc(t.cat)+'</span></td>'
@@ -891,7 +898,7 @@ function onTypeChange() {
   var prev = sel.value;
   var isPem = v==='income'||v==='projected_income';
   var cats = isPem ? ['Salary', 'Freelance', 'Investasi', 'Bisnis', 'Lainnya'] : ['Food', 'Transportasi', 'Subscription', 'Hutang', 'Tagihan', 'Hiburan', 'Kesehatan', 'Pendidikan', 'Lainnya'];
-  sel.innerHTML = cats.map(function(c){return '<option value="'+c+'">'+c+'</option>';}).join('') + '<option value="custom">Custom...</option>';
+  sel.innerHTML = cats.map(function(c){return '<option value="'+c+'">'+c+'</option>';}).join('') + '<option value="custom">'+t('custom_cat')+'</option>';
   if (cats.includes(prev) || prev === 'custom') sel.value = prev;
   else sel.value = cats[0];
   onCatChange();
@@ -905,10 +912,10 @@ function updPrev(){
   var freq=document.getElementById('f-freq').value, cdays=document.getElementById('f-custom-days').value, cnt=document.getElementById('f-cnt').value,
     end=document.getElementById('f-end').value, start=document.getElementById('f-date').value;
   var finalFreq = freq === 'custom' && cdays ? 'custom_' + cdays : freq;
-  var lines=['Start: '+fd(start),'Frekuensi: '+getFreqLbl(finalFreq)];
-  if(cnt) lines.push('Maks: '+cnt+'×');
-  if(end) lines.push('Berakhir: '+fd(end));
-  if(!cnt&&!end) lines.push('Unlimited');
+  var lines=[t('start')+': '+fd(start), t('frequency')+': '+getFreqLbl(finalFreq)];
+  if(cnt) lines.push(t('max')+': '+cnt+'×');
+  if(end) lines.push(t('ends')+': '+fd(end));
+  if(!cnt&&!end) lines.push(t('unlimited'));
   el.innerHTML=lines.join(' &nbsp;·&nbsp; ');
 }
 ['f-freq','f-cnt','f-end','f-date','f-custom-days'].forEach(function(id){
@@ -919,7 +926,7 @@ function updPrev(){
 // ===== MODAL =====
 function openModalTrx(){
   document.getElementById('m-trx').classList.remove('hide');
-  document.getElementById('mtrx-ttl').textContent='Add Transaction';
+  document.getElementById('mtrx-ttl').textContent=t('add_transaction');
   document.getElementById('eid').value='';
   document.getElementById('f-date').value=today;
   document.getElementById('f-custom-days').value='';
@@ -965,28 +972,28 @@ document.getElementById('m-acc').addEventListener('click',function(e){if(e.targe
 // ===== RENDER =====
 
 function render(){
+  var fil = getFiltered();
   var mi=0, me=0, cm=0, ck=0;
-  for(var i=0;i<DB.length;i++) {
-    if(DB[i].type==='income') mi+=DB[i].amt;
-    else if(DB[i].type==='expense') me+=DB[i].amt;
-    else if(DB[i].type==='projected_income') cm+=DB[i].amt;
-    else if(DB[i].type==='projected_expense') ck+=DB[i].amt;
+  for(var i=0;i<fil.length;i++) {
+    if(fil[i].type==='income') mi+=fil[i].amt;
+    else if(fil[i].type==='expense') me+=fil[i].amt;
+    else if(fil[i].type==='projected_income') cm+=fil[i].amt;
+    else if(fil[i].type==='projected_expense') ck+=fil[i].amt;
   }
-  var initBal=0; for(var j=0;j<ACCS.length;j++) initBal+=ACCS[j].init;
-  var bal = initBal + mi - me;
+  var bal = getTotalBalance();
   var proj = bal + cm - ck;
 
   setKV('kv-i',mi); setKV('kv-e',me); setKV('kv-b',bal); setKV('kv-p',proj - bal);
   setKV('lv-i',mi); setKV('lv-e',me); setKV('lv-b',bal); setKV('lv-p',proj);
-  document.getElementById('km-i').textContent = DB.filter(function(x){return x.type==='income';}).length+' '+t('nav_transaction').toLowerCase();
-  document.getElementById('km-e').textContent = DB.filter(function(x){return x.type==='expense';}).length+' '+t('nav_transaction').toLowerCase();
+  document.getElementById('km-i').textContent = fil.filter(function(x){return x.type==='income';}).length+' '+t('nav_transaction').toLowerCase();
+  document.getElementById('km-e').textContent = fil.filter(function(x){return x.type==='expense';}).length+' '+t('nav_transaction').toLowerCase();
   document.getElementById('lbl-cm').textContent = rpf(cm) + ' '+t('nav_proj_in').toLowerCase();
   document.getElementById('lbl-ck').textContent = rpf(ck) + ' '+t('nav_proj_out').toLowerCase();
 
   renderAccCards('dash-acc', true);
   renderAccCards('acc-grid-full', false);
   
-  var sortedDB = DB.slice().sort(function(a,b){return b.date.localeCompare(a.date);});
+  var sortedDB = fil.slice().sort(function(a,b){return b.date.localeCompare(a.date);});
   renderPreview('prev-cm', sortedDB.filter(function(t){return t.type==='projected_income';}), 'tci');
   renderPreview('prev-ck', sortedDB.filter(function(t){return t.type==='projected_expense';}), 'tce');
   renderDashTable('tb-dash', sortedDB.slice(0,8));
@@ -1023,7 +1030,7 @@ function renderAccCards(containerId, mini){
     }
     var typeCls={bank:'bblu',ewallet:'bpur',cash:'bsuc'}[a.type]||'bpri';
     var balColor=bal>=0?'var(--pri)':'var(--err)';
-    var btnExtra=mini?'':'<button class="btn bg bsm" onclick="showAccTrx('+a.id+')" style="width:100%;justify-content:center;margin-top:auto"><i data-lucide="list"></i>Lihat Riwayat</button>';
+    var btnExtra=mini?'':'<button class="btn bg bsm" onclick="showAccTrx('+a.id+')" style="width:100%;justify-content:center;margin-top:auto"><i data-lucide="list"></i>'+t('recent_trx')+'</button>';
     return '<div class="acc-card">'
       +'<div class="acc-stripe" style="background:'+esc(a.color)+'"></div>'
       +'<div class="acc-head">'
