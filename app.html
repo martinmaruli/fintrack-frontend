@@ -220,6 +220,8 @@ tbody tr:last-child td{border-bottom:none}
   .g2{grid-template-columns:1fr}
   .mc{padding:var(--s4)}
   .fr,.fr3{grid-template-columns:1fr}
+  #sb-email{display:none}
+  #sb-profile{flex-direction:column;gap:var(--s2);padding:var(--s2) 0 !important;align-items:center}
 }
 @media(max-width:480px){.kg,.acc-grid{grid-template-columns:1fr}}
 </style>
@@ -386,7 +388,7 @@ tbody tr:last-child td{border-bottom:none}
     <div class="nit" onclick="gv('laporan',this)"><i data-lucide="bar-chart-2"></i><span>Report</span></div>
     <div class="sb-foot">
       <div class="nit" onclick="doExport()"><i data-lucide="download"></i><span>Export CSV</span></div>
-      <div style="display:flex;align-items:center;gap:var(--s3);padding:var(--s3) var(--s2);border-top:1px solid var(--div);margin-top:var(--s2)">
+      <div id="sb-profile" style="display:flex;align-items:center;gap:var(--s3);padding:var(--s3) var(--s2);border-top:1px solid var(--div);margin-top:var(--s2)">
         <div id="sb-avatar" style="width:30px;height:30px;border-radius:var(--rfl);background:var(--prhl);color:var(--pri);display:flex;align-items:center;justify-content:center;font-size:var(--xs);font-weight:700;flex-shrink:0">?</div>
         <div id="sb-email" style="font-size:var(--xs);color:var(--mut);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">-</div>
         <button class="bic" onclick="doLogout()" title="Keluar"><i data-lucide="log-out" style="width:16px;height:16px;color:var(--err)"></i></button>
@@ -1294,7 +1296,7 @@ function loadSampleData() {
 
 // ===== AUTH =====
 function doLogout(auto) {
-  if (!auto && !confirm(''+t('logout_confirm')+' FinTrack?')) return;
+  if (!auto && !confirm(t('logout_confirm'))) return;
   ['ft_token','ft_user','ft_db','ft_accs'].forEach(function(k){ localStorage.removeItem(k); });
   window.location.href = 'index.html';
 }
