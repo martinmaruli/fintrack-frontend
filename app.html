@@ -876,8 +876,7 @@ function onTypeChange() {
   var isPem = v==='pemasukan'||v==='calon_pemasukan';
   var cats = isPem ? ['Gaji', 'Freelance', 'Investasi', 'Bisnis', 'Lainnya'] : ['Makanan', 'Transportasi', 'Langganan', 'Hutang', 'Tagihan', 'Hiburan', 'Kesehatan', 'Pendidikan', 'Lainnya'];
   sel.innerHTML = cats.map(function(c){return '<option value="'+c+'">'+c+'</option>';}).join('') + '<option value="custom">Custom...</option>';
-  if (cats.includes(prev)) sel.value = prev;
-  else if (prev && prev !== 'custom') { sel.value = 'custom'; document.getElementById('f-custom-cat').value = prev; }
+  if (cats.includes(prev) || prev === 'custom') sel.value = prev;
   else sel.value = cats[0];
   onCatChange();
 }
@@ -909,7 +908,7 @@ function openModalTrx(){
   document.getElementById('f-date').value=today;
   document.getElementById('f-custom-days').value='';
   document.getElementById('f-custom-grp').style.display='none';
-  document.getElementById('f-type').value='pemasukan';
+  document.getElementById('f-type').value='pengeluaran';
   onTypeChange();
   populateAccSelect();
   if (ACCS.length > 0) document.getElementById('f-acc').value = ACCS[0].id;
@@ -1007,7 +1006,7 @@ function renderAccCards(containerId, mini){
     }
     var typeCls={bank:'bblu',ewallet:'bpur',cash:'bsuc'}[a.type]||'bpri';
     var balColor=bal>=0?'var(--pri)':'var(--err)';
-    var btnExtra=mini?'':'<button class="btn bg bsm" onclick="showAccTrx('+a.id+')" style="width:100%;justify-content:center;margin-top:var(--s1)"><i data-lucide="list"></i>Lihat Riwayat</button>';
+    var btnExtra=mini?'':'<button class="btn bg bsm" onclick="showAccTrx('+a.id+')" style="width:100%;justify-content:center;margin-top:auto"><i data-lucide="list"></i>Lihat Riwayat</button>';
     return '<div class="acc-card">'
       +'<div class="acc-stripe" style="background:'+esc(a.color)+'"></div>'
       +'<div class="acc-head">'
