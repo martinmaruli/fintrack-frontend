@@ -213,8 +213,9 @@ tbody tr:last-child td{border-bottom:none}
   :root{--sw:64px}
   .sb{padding:var(--s2)}
   .sb-logo{padding:var(--s2) 0;justify-content:center}
-  .ltx,.nit span,.nsec{display:none}
+  .ltx,.nit span,.nsec,#tx-chevron{display:none}
   .nit{padding:var(--s2);justify-content:center}
+  #tx-sub{padding-left:0 !important;}
   .kg,.acc-grid{grid-template-columns:1fr 1fr}
   .g2{grid-template-columns:1fr}
   .mc{padding:var(--s4)}
@@ -371,16 +372,18 @@ tbody tr:last-child td{border-bottom:none}
       </div>
       <span class="ltx">Fin<span>Track</span></span>
     </div>
-    <div class="nsec">Menu</div>
     <div class="nit on" onclick="gv('dashboard',this)"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></div>
-    <div class="nit" onclick="gv('akun',this)"><i data-lucide="credit-card"></i><span>Rekening &amp; Dompet</span></div>
-    <div class="nit" onclick="gv('pemasukan',this)"><i data-lucide="arrow-down-circle"></i><span>Pemasukan</span></div>
-    <div class="nit" onclick="gv('pengeluaran',this)"><i data-lucide="arrow-up-circle"></i><span>Pengeluaran</span></div>
-    <div class="nsec">Proyeksi</div>
-    <div class="nit" onclick="gv('cp',this)"><i data-lucide="trending-up"></i><span>Calon Pemasukan</span></div>
-    <div class="nit" onclick="gv('ck',this)"><i data-lucide="trending-down"></i><span>Calon Pengeluaran</span></div>
-    <div class="nsec">Laporan</div>
-    <div class="nit" onclick="gv('laporan',this)"><i data-lucide="bar-chart-2"></i><span>Ringkasan</span></div>
+    
+    <div class="nit" onclick="toggleSubmenu('tx-sub')"><i data-lucide="list"></i><span style="flex:1">Transaction</span><i data-lucide="chevron-down" id="tx-chevron" style="width:16px;height:16px"></i></div>
+    <div id="tx-sub" style="display:none;flex-direction:column;padding-left:var(--s4);gap:2px">
+      <div class="nit" onclick="gv('akun',this)"><i data-lucide="credit-card"></i><span>Bank &amp; Wallet</span></div>
+      <div class="nit" onclick="gv('pemasukan',this)"><i data-lucide="arrow-down-circle"></i><span>Income</span></div>
+      <div class="nit" onclick="gv('pengeluaran',this)"><i data-lucide="arrow-up-circle"></i><span>Outcome</span></div>
+      <div class="nit" onclick="gv('cp',this)"><i data-lucide="trending-up"></i><span>Projected Income</span></div>
+      <div class="nit" onclick="gv('ck',this)"><i data-lucide="trending-down"></i><span>Projected Outcome</span></div>
+    </div>
+
+    <div class="nit" onclick="gv('laporan',this)"><i data-lucide="bar-chart-2"></i><span>Report</span></div>
     <div class="sb-foot">
       <div class="nit" onclick="doExport()"><i data-lucide="download"></i><span>Export CSV</span></div>
       <div style="display:flex;align-items:center;gap:var(--s3);padding:var(--s3) var(--s2);border-top:1px solid var(--div);margin-top:var(--s2)">
@@ -1181,13 +1184,25 @@ function renderLaporan(fil,mi,me,bal,cm,ck,proj){
 // ===== NAV =====
 var vmeta={
   dashboard:['Dashboard','Ringkasan keuangan Anda'],
-  akun:['Rekening & Dompet','Kelola semua akun keuangan Anda'],
-  pemasukan:['Pemasukan','Uang masuk yang sudah diterima'],
-  pengeluaran:['Pengeluaran','Pengeluaran yang sudah terjadi'],
-  cp:['Calon Pemasukan','Template pemasukan — bisa berulang otomatis'],
-  ck:['Calon Pengeluaran','Langganan, cicilan, hutang — bisa berulang'],
-  laporan:['Ringkasan','Laporan keuangan lengkap'],
+  akun:['Bank & Wallet','Kelola semua akun keuangan Anda'],
+  pemasukan:['Income','Uang masuk yang sudah diterima'],
+  pengeluaran:['Outcome','Pengeluaran yang sudah terjadi'],
+  cp:['Projected Income','Template pemasukan — bisa berulang otomatis'],
+  ck:['Projected Outcome','Langganan, cicilan, hutang — bisa berulang'],
+  laporan:['Report','Laporan keuangan lengkap'],
 };
+function toggleSubmenu(id){
+  var sub = document.getElementById(id);
+  var chev = document.getElementById('tx-chevron');
+  if(sub.style.display==='none'){
+    sub.style.display='flex';
+    chev.setAttribute('data-lucide','chevron-up');
+  } else {
+    sub.style.display='none';
+    chev.setAttribute('data-lucide','chevron-down');
+  }
+  lucide.createIcons();
+}
 function gv(v,el){
   document.querySelectorAll('.view').forEach(function(x){x.classList.remove('on');});
   document.querySelectorAll('.nit').forEach(function(x){x.classList.remove('on');});
