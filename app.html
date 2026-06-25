@@ -287,14 +287,14 @@ tbody tr:last-child td{border-bottom:none}
           <div class="fr">
             <div class="fgrp">
               <label class="fl">Frekuensi</label>
-              <select class="fs" id="f-freq" onchange="updPrev()">
+              <select class="fs" id="f-freq" onchange="onFreqChange()">
                 <option value="monthly">Setiap Bulan</option>
-                <option value="weekly">Setiap Minggu</option>
-                <option value="biweekly">2 Minggu Sekali</option>
-                <option value="yearly">Setiap Tahun</option>
-                <option value="daily">Setiap Hari</option>
-                <option value="minutes">Setiap Menit (Test)</option>
+                <option value="custom">Custom (Hari)</option>
               </select>
+            </div>
+            <div class="fgrp hide" id="f-custom-grp">
+              <label class="fl">Jumlah Hari</label>
+              <input class="fi" id="f-custom-days" type="number" placeholder="cth: 5" min="1" oninput="updPrev()">
             </div>
             <div class="fgrp">
               <label class="fl">Maks Pengulangan <span class="fh">(opsional)</span></label>
@@ -659,14 +659,14 @@ function populateAccSelect() {
 function addDate(d, freq) {
   var dt = new Date(d);
   if (freq==='monthly')  dt.setMonth(dt.getMonth()+1);
-  else if (freq==='weekly')   dt.setDate(dt.getDate()+7);
-  else if (freq==='biweekly') dt.setDate(dt.getDate()+14);
-  else if (freq==='yearly')   dt.setFullYear(dt.getFullYear()+1);
-  else if (freq==='daily')    dt.setDate(dt.getDate()+1);
-  else if (freq==='minutes')  dt.setMinutes(dt.getMinutes()+1);
+  else if (freq && freq.startsWith('custom_')) dt.setDate(dt.getDate() + parseInt(freq.split('_')[1]));
   return dt.toISOString().slice(0, 16);
 }
-var FREQ_LBL = {monthly:'Bulanan',weekly:'Mingguan',biweekly:'2 Minggu',yearly:'Tahunan',daily:'Harian',minutes:'Menitan'};
+function getFreqLbl(f) {
+  if (f === 'monthly') return 'Bulanan';
+  if (f && f.startsWith('custom_')) return 'Tiap ' + f.split('_')[1] + ' Hari';
+  return f || '';
+}
 
 function getRange() {
   if (period==='semua') return {from:'2000-01-01',to:'2099-12-31'};
@@ -699,7 +699,7 @@ function sum(list,type){ var s=0; for(var i=0;i<list.length;i++) if(list[i].type
 // ===== FORMAT =====
 function rp(n){ var neg=n<0,a=Math.abs(n),s='Rp '+a.toLocaleString('id-ID'); return neg?'-'+s:s; }
 function rpf(n){ return 'Rp '+Math.abs(n).toLocaleString('id-ID'); }
-function fd(s){ if(!s)return'-'; var p=s.split('-'),mm=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des']; return parseInt(p[2])+' '+mm[parseInt(p[1])-1]+' '+p[0]; }
+function fd(s){ if(!s)return'-'; var p=s.split('T')[0].split('-'),mm=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des']; return parseInt(p[2])+' '+mm[parseInt(p[1])-1]+' '+p[0]; }
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 // ===== CRUD TRANSACTIONS =====
@@ -715,7 +715,10 @@ function editTrx(id) {
   document.getElementById('f-date').value=t.date;
   document.getElementById('f-note').value=t.note||'';
   document.getElementById('f-rec').checked=!!t.rec;
-  document.getElementById('f-freq').value=t.freq||'monthly';
+  var isCst = t.freq && t.freq.startsWith('custom_');
+  document.getElementById('f-freq').value=isCst ? 'custom' : (t.freq||'monthly');
+  if(isCst) document.getElementById('f-custom-days').value=t.freq.split('_')[1];
+  else document.getElementById('f-custom-days').value='';
   document.getElementById('f-cnt').value=t.cnt||'';
   document.getElementById('f-end').value=t.endDate||'';
   document.getElementById('mtrx-ttl').textContent='Edit Transaksi';
@@ -725,6 +728,26 @@ function editTrx(id) {
   if(t.rec){document.getElementById('rec-opts').classList.remove('hide');updPrev();}
   document.getElementById('m-trx').classList.remove('hide');
   setTimeout(function(){lucide.createIcons();},50);
+}
+
+function togglePause(id) {
+  var t = DB.find(function(x){return x.id===id;});
+  if(!t)return;
+  var note = t.note || '';
+  if (note.includes('[PAUSED]')) t.note = note.replace('[PAUSED]', '').trim();
+  else if (note.includes('[STOPPED]')) t.note = note.replace('[STOPPED]', '[PAUSED]').trim();
+  else t.note = '[PAUSED] ' + note.trim();
+  apiUpdateTrx(t); saveLS(); render(); toast(t.note.includes('[PAUSED]') ? 'Di-pause' : 'Diaktifkan kembali');
+}
+
+function toggleStop(id) {
+  var t = DB.find(function(x){return x.id===id;});
+  if(!t)return;
+  var note = t.note || '';
+  if (note.includes('[STOPPED]')) t.note = note.replace('[STOPPED]', '').trim();
+  else if (note.includes('[PAUSED]')) t.note = note.replace('[PAUSED]', '[STOPPED]').trim();
+  else t.note = '[STOPPED] ' + note.trim();
+  apiUpdateTrx(t); saveLS(); render(); toast(t.note.includes('[STOPPED]') ? 'Dihentikan' : 'Diaktifkan kembali');
 }
 
 document.getElementById('form-trx').addEventListener('submit',function(e){
@@ -741,7 +764,11 @@ document.getElementById('form-trx').addEventListener('submit',function(e){
     date:document.getElementById('f-date').value,
     note:document.getElementById('f-note').value.trim(),
     accId: accVal ? parseInt(accVal) : null,
-    rec:isRec, freq:isRec?document.getElementById('f-freq').value:null,
+    var freqVal = document.getElementById('f-freq').value;
+    var customDays = document.getElementById('f-custom-days').value;
+    var finalFreq = isRec ? (freqVal === 'custom' && customDays ? 'custom_' + customDays : freqVal) : null;
+    
+    rec:isRec, freq:finalFreq,
     cnt:isRec?(document.getElementById('f-cnt').value||null):null,
     endDate:isRec?(document.getElementById('f-end').value||null):null
   };
@@ -829,18 +856,20 @@ function onTypeChange() {
   if(!isC){document.getElementById('f-rec').checked=false;document.getElementById('rec-opts').classList.add('hide');}
 }
 function onRecChange(){ var c=document.getElementById('f-rec').checked; document.getElementById('rec-opts').classList.toggle('hide',!c); updPrev(); }
+function onFreqChange(){ var f=document.getElementById('f-freq').value; document.getElementById('f-custom-grp').classList.toggle('hide', f!=='custom'); updPrev(); }
 function updPrev(){
   var el=document.getElementById('rec-prev');
   if(!document.getElementById('f-rec').checked){el.textContent='';return;}
-  var freq=document.getElementById('f-freq').value, cnt=document.getElementById('f-cnt').value,
+  var freq=document.getElementById('f-freq').value, cdays=document.getElementById('f-custom-days').value, cnt=document.getElementById('f-cnt').value,
     end=document.getElementById('f-end').value, start=document.getElementById('f-date').value;
-  var lines=['Mulai: '+fd(start),'Frekuensi: '+(FREQ_LBL[freq]||freq)];
+  var finalFreq = freq === 'custom' && cdays ? 'custom_' + cdays : freq;
+  var lines=['Mulai: '+fd(start),'Frekuensi: '+getFreqLbl(finalFreq)];
   if(cnt) lines.push('Maks: '+cnt+'×');
   if(end) lines.push('Berakhir: '+fd(end));
   if(!cnt&&!end) lines.push('Tanpa batas');
   el.innerHTML=lines.join(' &nbsp;·&nbsp; ');
 }
-['f-freq','f-cnt','f-end','f-date'].forEach(function(id){
+['f-freq','f-cnt','f-end','f-date','f-custom-days'].forEach(function(id){
   var el=document.getElementById(id);
   el.addEventListener('change',updPrev); el.addEventListener('input',updPrev);
 });
@@ -851,7 +880,8 @@ function openModalTrx(){
   document.getElementById('mtrx-ttl').textContent='Tambah Transaksi';
   document.getElementById('eid').value='';
   document.getElementById('f-date').value=today;
-  onTypeChange(); populateAccSelect();
+  document.getElementById('f-custom-days').value='';
+  document.getElementById('f-custom-grp').classList.add('hide');
   setTimeout(function(){lucide.createIcons();},50);
 }
 function openModalAs(type){
@@ -875,7 +905,8 @@ function closeModal(id){
     document.getElementById('f-date').value=today;
     document.getElementById('rec-sec').style.display='none';
     document.getElementById('f-acc-grp').style.display='none';
-    document.getElementById('rec-opts').classList.add('hide');
+    document.getElementById('f-custom-grp').classList.add('hide');
+    document.getElementById('f-custom-days').value='';
     document.getElementById('rec-prev').textContent='';
   }
   if(id==='m-acc') document.getElementById('aeid').value='';
@@ -975,7 +1006,7 @@ function renderDashTable(id, list){
   el.innerHTML=list.map(function(t){
     var ti=typeInfo(t.type);
     var sign=(t.type==='pemasukan'||t.type==='calon_pemasukan')?'+':'-';
-    var recB=t.rec?'&nbsp;<span class="badge brec" style="font-size:10px"><i data-lucide="repeat"></i>'+(FREQ_LBL[t.freq]||'')+'</span>':'';
+    var recB=t.rec?'&nbsp;<span class="badge brec" style="font-size:10px"><i data-lucide="repeat"></i>'+getFreqLbl(t.freq)+'</span>':'';
     return '<tr><td><strong>'+esc(t.desc)+'</strong>'+recB+'</td>'
       +'<td>'+accLabel(t.accId)+'</td>'
       +'<td><span class="badge bpri">'+esc(t.cat)+'</span></td>'
@@ -1007,15 +1038,23 @@ function renderCalon(id, list){
   if(!list.length){el.innerHTML='<tr><td colspan="9"><div class="es"><i data-lucide="inbox"></i><h3>Belum ada data</h3><p>Tambah dengan tombol di atas</p></div></td></tr>';return;}
   var r=getRange();
   el.innerHTML=list.slice().sort(function(a,b){return a.date.localeCompare(b.date);}).map(function(t){
-    var recL=t.rec?'<span class="badge brec"><i data-lucide="repeat"></i>'+(FREQ_LBL[t.freq]||t.freq)+'</span>':'<span style="color:var(--fnt);font-size:var(--xs)">Sekali</span>';
+    var recL=t.rec?'<span class="badge brec"><i data-lucide="repeat"></i>'+getFreqLbl(t.freq)+'</span>':'<span style="color:var(--fnt);font-size:var(--xs)">Sekali</span>';
     var limL='-';
     if(t.rec){if(t.endDate&&t.cnt)limL=fd(t.endDate)+' / '+t.cnt+'×'; else if(t.endDate)limL=fd(t.endDate); else if(t.cnt)limL='Maks '+t.cnt+'×'; else limL='∞ Tanpa batas';}
     var occ=expand(t,r.from,r.to);
     var ptotal=0; for(var j=0;j<occ.length;j++) ptotal+=occ[j].amt;
     var nextDate='-';
+    var isPaused = t.note && t.note.includes('[PAUSED]');
+    var isStopped = t.note && t.note.includes('[STOPPED]');
+    
     if(t.rec){var d=t.date,sf=0;while(d<today&&sf++<500){d=addDate(d,t.freq);if(t.endDate&&d>t.endDate){d=null;break;}}if(d&&d>=today)nextDate=fd(d);}
+    
+    var statBadge = '';
+    if (isStopped) statBadge = ' <span class="badge berr" style="font-size:10px">Stopped</span>';
+    else if (isPaused) statBadge = ' <span class="badge bwrn" style="font-size:10px">Paused</span>';
+
     return '<tr>'
-      +'<td><strong>'+esc(t.desc)+'</strong>'+(nextDate!=='-'?'<div class="nd"><i data-lucide="calendar-clock"></i>Berikutnya: '+nextDate+'</div>':'')+'</td>'
+      +'<td><strong>'+esc(t.desc)+'</strong>'+statBadge+(nextDate!=='-'?'<div class="nd"><i data-lucide="calendar-clock"></i>Berikutnya: '+nextDate+'</div>':'')+'</td>'
       +'<td><span class="badge bpri">'+esc(t.cat)+'</span></td>'
       +'<td>'+accLabel(t.accId)+'</td>'
       +'<td>'+recL+'</td><td style="color:var(--mut)">'+fd(t.date)+'</td>'
@@ -1023,8 +1062,10 @@ function renderCalon(id, list){
       +'<td style="color:var(--mut);font-size:var(--xs)">'+esc(t.note||'-')+'</td>'
       +'<td style="text-align:right"><div class="ta '+amtCls(t.type)+'">'+rpf(t.amt)+'</div>'+(occ.length>1?'<div style="font-size:var(--xs);color:var(--mut)">'+occ.length+'× = '+rpf(ptotal)+'</div>':'')+'</td>'
       +'<td><div style="display:flex;gap:var(--s1)">'
-      +'<button class="btn bg bsm" onclick="editTrx('+t.id+')"><i data-lucide="pencil" style="width:12px;height:12px"></i></button>'
-      +'<button class="btn bd bsm" onclick="delTrx('+t.id+')"><i data-lucide="trash-2" style="width:12px;height:12px"></i></button>'
+      +'<button class="btn bg bsm" onclick="togglePause('+t.id+')" title="Pause/Resume"><i data-lucide="'+(isPaused||isStopped?'play':'pause')+'" style="width:12px;height:12px"></i></button>'
+      +(isStopped?'':'<button class="btn bg bsm" onclick="toggleStop('+t.id+')" title="Stop"><i data-lucide="square" style="width:12px;height:12px"></i></button>')
+      +'<button class="btn bg bsm" onclick="editTrx('+t.id+')" title="Edit"><i data-lucide="pencil" style="width:12px;height:12px"></i></button>'
+      +'<button class="btn bd bsm" onclick="delTrx('+t.id+')" title="Hapus"><i data-lucide="trash-2" style="width:12px;height:12px"></i></button>'
       +'</div></td></tr>';
   }).join('');
 }
@@ -1036,7 +1077,7 @@ function renderPreview(id, items, cls){
   items.forEach(function(t){if(!grp[t.id]){grp[t.id]={t:t,total:0,cnt:0};ord.push(t.id);}grp[t.id].total+=t.amt;grp[t.id].cnt++;});
   el.innerHTML=ord.map(function(gid){
     var g=grp[gid],t=g.t;
-    var rb=t.rec?'&nbsp;<span class="badge brec" style="font-size:10px"><i data-lucide="repeat"></i>'+(FREQ_LBL[t.freq]||'')+'</span>':'';
+    var rb=t.rec?'&nbsp;<span class="badge brec" style="font-size:10px"><i data-lucide="repeat"></i>'+getFreqLbl(t.freq)+'</span>':'';
     return '<div style="display:flex;align-items:center;gap:var(--s3);padding:var(--s2) 0;border-bottom:1px solid var(--div)">'
       +'<div style="flex:1;min-width:0"><div style="font-weight:600;font-size:var(--sm)">'+esc(t.desc)+rb+'</div>'
       +'<div style="font-size:var(--xs);color:var(--mut)">'+esc(t.cat)+(g.cnt>1?' · '+g.cnt+'× bulan ini':'')+'</div></div>'
