@@ -448,7 +448,7 @@ tbody tr:last-child td{border-bottom:none}
 
         <div class="card">
           <div class="ch"><div><div class="ct">Recent Transactions</div><div class="cs">Recent activity</div></div></div>
-          <div class="tw"><table><thead><tr><th>'+t('desc')+'</th><th>'+t('account')+'</th><th>'+t('category')+'</th><th>'+t('type')+'</th><th>'+t('date')+'</th><th style="text-align:right">Amount</th></tr></thead><tbody id="tb-dash"></tbody></table></div>
+          <div class="tw"><table><thead><tr><th data-i18n="desc">Description</th><th data-i18n="account">Account</th><th data-i18n="category">Category</th><th data-i18n="type">Type</th><th data-i18n="date">Date</th><th style="text-align:right">Amount</th></tr></thead><tbody id="tb-dash"></tbody></table></div>
         </div>
       </div>
 
@@ -466,7 +466,7 @@ tbody tr:last-child td{border-bottom:none}
             <div><div class="ct" id="acc-trx-title">Transaksi</div><div class="cs" id="acc-trx-sub"></div></div>
             <button class="btn bg bsm" onclick="document.getElementById('acc-trx-card').style.display='none'"><i data-lucide="x"></i>Close</button>
           </div>
-          <div class="tw"><table><thead><tr><th>'+t('desc')+'</th><th>'+t('category')+'</th><th>'+t('date')+'</th><th>'+t('note')+'</th><th style="text-align:right">Amount</th></tr></thead><tbody id="tb-acc-trx"></tbody></table></div>
+          <div class="tw"><table><thead><tr><th data-i18n="desc">Description</th><th data-i18n="category">Category</th><th data-i18n="date">Date</th><th data-i18n="note">Note</th><th style="text-align:right">Amount</th></tr></thead><tbody id="tb-acc-trx"></tbody></table></div>
         </div>
       </div>
 
@@ -474,7 +474,7 @@ tbody tr:last-child td{border-bottom:none}
       <div class="view" id="view-income">
         <div class="card">
           <div class="ch"><div><div class="ct">Income</div><div class="cs">Income that has been received</div></div><button class="btn bp bsm" onclick="openModalAs('income')"><i data-lucide="plus"></i>Add</button></div>
-          <div class="tw"><table><thead><tr><th>'+t('desc')+'</th><th>'+t('account')+'</th><th>'+t('category')+'</th><th>'+t('date')+'</th><th>'+t('note')+'</th><th style="text-align:right">Amount</th><th>'+t('action')+'</th></tr></thead><tbody id="tb-i"></tbody></table></div>
+          <div class="tw"><table><thead><tr><th data-i18n="desc">Description</th><th data-i18n="account">Account</th><th data-i18n="category">Category</th><th data-i18n="date">Date</th><th data-i18n="note">Note</th><th style="text-align:right">Amount</th><th data-i18n="action">Action</th></tr></thead><tbody id="tb-i"></tbody></table></div>
         </div>
       </div>
 
@@ -482,7 +482,7 @@ tbody tr:last-child td{border-bottom:none}
       <div class="view" id="view-expense">
         <div class="card">
           <div class="ch"><div><div class="ct">Expense</div><div class="cs">Expenses that have occurred</div></div><button class="btn bp bsm" onclick="openModalAs('expense')"><i data-lucide="plus"></i>Add</button></div>
-          <div class="tw"><table><thead><tr><th>'+t('desc')+'</th><th>'+t('account')+'</th><th>'+t('category')+'</th><th>'+t('date')+'</th><th>'+t('note')+'</th><th style="text-align:right">Amount</th><th>'+t('action')+'</th></tr></thead><tbody id="tb-e"></tbody></table></div>
+          <div class="tw"><table><thead><tr><th data-i18n="desc">Description</th><th data-i18n="account">Account</th><th data-i18n="category">Category</th><th data-i18n="date">Date</th><th data-i18n="note">Note</th><th style="text-align:right">Amount</th><th data-i18n="action">Action</th></tr></thead><tbody id="tb-e"></tbody></table></div>
         </div>
       </div>
 
@@ -490,7 +490,7 @@ tbody tr:last-child td{border-bottom:none}
       <div class="view" id="view-cp">
         <div class="card">
           <div class="ch"><div><div class="ct">Projected Income</div><div class="cs">Income template — can repeat automatically</div></div><button class="btn bp bsm" onclick="openModalAs('projected_income')"><i data-lucide="plus"></i>Add</button></div>
-          <div class="tw"><table><thead><tr><th>'+t('desc')+'</th><th>'+t('category')+'</th><th>'+t('account')+'</th><th>'+t('recurrence')+'</th><th>'+t('start')+'</th><th>'+t('limit')+'</th><th>'+t('note')+'</th><th style="text-align:right">Per Period</th><th>'+t('action')+'</th></tr></thead><tbody id="tb-cp"></tbody></table></div>
+          <div class="tw"><table><thead><tr><th data-i18n="desc">Description</th><th data-i18n="category">Category</th><th data-i18n="account">Account</th><th data-i18n="recurrence">Recurrence</th><th data-i18n="start">Start</th><th data-i18n="limit">Limit</th><th data-i18n="note">Note</th><th style="text-align:right">Per Period</th><th data-i18n="action">Action</th></tr></thead><tbody id="tb-cp"></tbody></table></div>
         </div>
       </div>
 
@@ -498,7 +498,7 @@ tbody tr:last-child td{border-bottom:none}
       <div class="view" id="view-ck">
         <div class="card">
           <div class="ch"><div><div class="ct">Projected Expense</div><div class="cs">Subscriptions, installments, debt — can repeat automatically</div></div><button class="btn bp bsm" onclick="openModalAs('projected_expense')"><i data-lucide="plus"></i>Add</button></div>
-          <div class="tw"><table><thead><tr><th>'+t('desc')+'</th><th>'+t('category')+'</th><th>'+t('account')+'</th><th>'+t('recurrence')+'</th><th>'+t('start')+'</th><th>'+t('limit')+'</th><th>'+t('note')+'</th><th style="text-align:right">Per Period</th><th>'+t('action')+'</th></tr></thead><tbody id="tb-ck"></tbody></table></div>
+          <div class="tw"><table><thead><tr><th data-i18n="desc">Description</th><th data-i18n="category">Category</th><th data-i18n="account">Account</th><th data-i18n="recurrence">Recurrence</th><th data-i18n="start">Start</th><th data-i18n="limit">Limit</th><th data-i18n="note">Note</th><th style="text-align:right">Per Period</th><th data-i18n="action">Action</th></tr></thead><tbody id="tb-ck"></tbody></table></div>
         </div>
       </div>
 
