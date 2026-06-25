@@ -269,7 +269,7 @@ tbody tr:last-child td{border-bottom:none}
         </div>
         <div class="fgrp">
           <label class="fl">Tanggal</label>
-          <input class="fi" id="f-date" type="date" required>
+          <input class="fi" id="f-date" type="datetime-local" required>
         </div>
       </div>
       <div class="fgrp">
@@ -293,6 +293,7 @@ tbody tr:last-child td{border-bottom:none}
                 <option value="biweekly">2 Minggu Sekali</option>
                 <option value="yearly">Setiap Tahun</option>
                 <option value="daily">Setiap Hari</option>
+                <option value="minutes">Setiap Menit (Test)</option>
               </select>
             </div>
             <div class="fgrp">
@@ -302,7 +303,7 @@ tbody tr:last-child td{border-bottom:none}
           </div>
           <div class="fgrp">
             <label class="fl">Tanggal Berakhir <span class="fh">(opsional)</span></label>
-            <input class="fi" id="f-end" type="date" onchange="updPrev()">
+            <input class="fi" id="f-end" type="datetime-local" onchange="updPrev()">
           </div>
           <div class="rpv" id="rec-prev">Isi opsi di atas untuk preview.</div>
         </div>
@@ -524,7 +525,7 @@ var API = 'https://fintrack-backend-khaki.vercel.app';
 // ===== STATE =====
 var DB = [], ACCS = [], uid = 1, auid = 1, period = 'bulan';
 var gmt7 = new Date(new Date().getTime() + (7 * 60 * 60 * 1000));
-var today = gmt7.toISOString().split('T')[0];
+var today = gmt7.toISOString().slice(0, 16);
 document.getElementById('f-date').value = today;
 
 // ===== AUTH =====
@@ -662,9 +663,10 @@ function addDate(d, freq) {
   else if (freq==='biweekly') dt.setDate(dt.getDate()+14);
   else if (freq==='yearly')   dt.setFullYear(dt.getFullYear()+1);
   else if (freq==='daily')    dt.setDate(dt.getDate()+1);
-  return dt.toISOString().split('T')[0];
+  else if (freq==='minutes')  dt.setMinutes(dt.getMinutes()+1);
+  return dt.toISOString().slice(0, 16);
 }
-var FREQ_LBL = {monthly:'Bulanan',weekly:'Mingguan',biweekly:'2 Minggu',yearly:'Tahunan',daily:'Harian'};
+var FREQ_LBL = {monthly:'Bulanan',weekly:'Mingguan',biweekly:'2 Minggu',yearly:'Tahunan',daily:'Harian',minutes:'Menitan'};
 
 function getRange() {
   if (period==='semua') return {from:'2000-01-01',to:'2099-12-31'};
@@ -891,7 +893,7 @@ function render(){
     proj=cm-ck;
 
   setKV('kv-i',mi); setKV('kv-e',me); setKV('kv-b',getTotalBalance()); setKV('kv-p',proj);
-  setKV('lv-i',mi); setKV('lv-e',me); setKV('lv-b',getTotalBalance()); setKV('lv-p',proj);
+  setKV('lv-i',mi); setKV('lv-e',me); setKV('lv-b',getTotalBalance()); setKV('lv-p',getTotalBalance() + proj);
   document.getElementById('km-i').textContent=fil.filter(function(t){return t.type==='pemasukan';}).length+' transaksi';
   document.getElementById('km-e').textContent=fil.filter(function(t){return t.type==='pengeluaran';}).length+' transaksi';
   document.getElementById('lbl-cm').textContent=rpf(cm)+' diproyeksikan';
@@ -1093,7 +1095,7 @@ function renderLaporan(fil,mi,me,bal,cm,ck,proj){
     {label:'Total Saldo Rekening',val:getTotalBalance(),color:'var(--pri)',icon:'wallet',bold:true},
     {label:'Calon Pemasukan',val:cm,color:'var(--gld)',icon:'trending-up'},
     {label:'Calon Pengeluaran',val:-ck,color:'var(--ora)',icon:'trending-down'},
-    {label:'Proyeksi Pemasukan',val:proj,color:proj>=0?'var(--pri)':'var(--err)',icon:'calculator',bold:true},
+    {label:'Proyeksi Akhir',val:getTotalBalance() + proj,color:(getTotalBalance() + proj)>=0?'var(--pri)':'var(--err)',icon:'calculator',bold:true},
   ];
   document.getElementById('lap-neraca').innerHTML=neraca.map(function(item,i){
     return '<div style="display:flex;align-items:center;justify-content:space-between;padding:var(--s3) 0;'+(i<neraca.length-1?'border-bottom:1px solid var(--div)':'')+'">'
