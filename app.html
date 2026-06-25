@@ -60,7 +60,7 @@ input,select{font:inherit;color:inherit}
 .nit{display:flex;align-items:center;gap:var(--s3);padding:var(--s2) var(--s3);border-radius:var(--rmd);font-size:var(--sm);color:var(--mut);transition:background var(--tr),color var(--tr);cursor:pointer;user-select:none}
 .nit:hover{background:var(--off);color:var(--txt)}
 .nit.on{background:var(--prhl);color:var(--pri);font-weight:600}
-.nit i{width:16px;height:16px;flex-shrink:0}
+.nit i, .nit svg{width:20px;height:20px;flex-shrink:0}
 .sb-foot{margin-top:auto;padding-top:var(--s4);border-top:1px solid var(--div)}
 
 /* MAIN */
@@ -210,9 +210,11 @@ tbody tr:last-child td{border-bottom:none}
 .acash{color:var(--suc);background:var(--suchl)}
 
 @media(max-width:768px){
-  :root{--sw:60px}
+  :root{--sw:64px}
+  .sb{padding:var(--s2)}
+  .sb-logo{padding:var(--s2) 0;justify-content:center}
   .ltx,.nit span,.nsec{display:none}
-  .nit{justify-content:center}
+  .nit{padding:var(--s2);justify-content:center}
   .kg,.acc-grid{grid-template-columns:1fr 1fr}
   .g2{grid-template-columns:1fr}
   .mc{padding:var(--s4)}
@@ -260,16 +262,15 @@ tbody tr:last-child td{border-bottom:none}
       <div class="fr">
         <div class="fgrp">
           <label class="fl">Kategori</label>
-          <select class="fs" id="f-cat">
-            <option>Gaji</option><option>Freelance</option><option>Investasi</option><option>Bisnis</option>
-            <option>Makanan</option><option>Transportasi</option><option>Langganan</option>
-            <option>Hutang</option><option>Tagihan</option><option>Hiburan</option>
-            <option>Kesehatan</option><option>Pendidikan</option><option>Lainnya</option>
-          </select>
+          <select class="fs" id="f-cat" onchange="onCatChange()"></select>
+        </div>
+        <div class="fgrp" id="f-custom-cat-grp" style="display:none">
+          <label class="fl">Kategori Kustom</label>
+          <input class="fi" id="f-custom-cat" placeholder="Ketik kategori...">
         </div>
         <div class="fgrp">
           <label class="fl">Tanggal</label>
-          <input class="fi" id="f-date" type="datetime-local" required>
+          <input class="fi" id="f-date" type="date" required>
         </div>
       </div>
       <div class="fgrp">
@@ -292,7 +293,7 @@ tbody tr:last-child td{border-bottom:none}
                 <option value="custom">Custom (Hari)</option>
               </select>
             </div>
-            <div class="fgrp hide" id="f-custom-grp">
+            <div class="fgrp" id="f-custom-grp" style="display:none">
               <label class="fl">Jumlah Hari</label>
               <input class="fi" id="f-custom-days" type="number" placeholder="cth: 5" min="1" oninput="updPrev()">
             </div>
@@ -303,7 +304,7 @@ tbody tr:last-child td{border-bottom:none}
           </div>
           <div class="fgrp">
             <label class="fl">Tanggal Berakhir <span class="fh">(opsional)</span></label>
-            <input class="fi" id="f-end" type="datetime-local" onchange="updPrev()">
+            <input class="fi" id="f-end" type="date" onchange="updPrev()">
           </div>
           <div class="rpv" id="rec-prev">Isi opsi di atas untuk preview.</div>
         </div>
@@ -660,7 +661,7 @@ function addDate(d, freq) {
   var dt = new Date(d);
   if (freq==='monthly')  dt.setMonth(dt.getMonth()+1);
   else if (freq && freq.startsWith('custom_')) dt.setDate(dt.getDate() + parseInt(freq.split('_')[1]));
-  return dt.toISOString().slice(0, 16);
+  return dt.getFullYear() + '-' + String(dt.getMonth()+1).padStart(2,'0') + '-' + String(dt.getDate()).padStart(2,'0');
 }
 function getFreqLbl(f) {
   if (f === 'monthly') return 'Bulanan';
@@ -711,7 +712,18 @@ function editTrx(id) {
   document.getElementById('f-desc').value=t.desc;
   document.getElementById('f-amt').value=t.amt;
   document.getElementById('f-type').value=t.type;
-  document.getElementById('f-cat').value=t.cat;
+  onTypeChange();
+  
+  var isPem = t.type==='pemasukan'||t.type==='calon_pemasukan';
+  var cats = isPem ? ['Gaji', 'Freelance', 'Investasi', 'Bisnis', 'Lainnya'] : ['Makanan', 'Transportasi', 'Langganan', 'Hutang', 'Tagihan', 'Hiburan', 'Kesehatan', 'Pendidikan', 'Lainnya'];
+  if (cats.includes(t.cat)) {
+    document.getElementById('f-cat').value=t.cat;
+    document.getElementById('f-custom-cat').value='';
+  } else {
+    document.getElementById('f-cat').value='custom';
+    document.getElementById('f-custom-cat').value=t.cat;
+  }
+  onCatChange();
   document.getElementById('f-date').value=t.date;
   document.getElementById('f-note').value=t.note||'';
   document.getElementById('f-rec').checked=!!t.rec;
@@ -719,6 +731,7 @@ function editTrx(id) {
   document.getElementById('f-freq').value=isCst ? 'custom' : (t.freq||'monthly');
   if(isCst) document.getElementById('f-custom-days').value=t.freq.split('_')[1];
   else document.getElementById('f-custom-days').value='';
+  document.getElementById('f-custom-grp').style.display=isCst?'flex':'none';
   document.getElementById('f-cnt').value=t.cnt||'';
   document.getElementById('f-end').value=t.endDate||'';
   document.getElementById('mtrx-ttl').textContent='Edit Transaksi';
@@ -761,10 +774,13 @@ document.getElementById('form-trx').addEventListener('submit',function(e){
     var customDays = document.getElementById('f-custom-days').value;
     var finalFreq = isRec ? (freqVal === 'custom' && customDays ? 'custom_' + customDays : freqVal) : null;
     
+    var catVal = document.getElementById('f-cat').value;
+    if (catVal === 'custom') catVal = document.getElementById('f-custom-cat').value.trim() || 'Lainnya';
+    
   var data={
     desc:document.getElementById('f-desc').value.trim(),
     amt:parseFloat(document.getElementById('f-amt').value),
-    type:tp, cat:document.getElementById('f-cat').value,
+    type:tp, cat:catVal,
     date:document.getElementById('f-date').value,
     note:document.getElementById('f-note').value.trim(),
     accId: accVal ? parseInt(accVal) : null,
@@ -854,9 +870,20 @@ function onTypeChange() {
   document.getElementById('rec-sec').style.display=isC?'':'none';
   document.getElementById('f-acc-grp').style.display=isActual?'':'none';
   if(!isC){document.getElementById('f-rec').checked=false;document.getElementById('rec-opts').classList.add('hide');}
+  
+  var sel = document.getElementById('f-cat');
+  var prev = sel.value;
+  var isPem = v==='pemasukan'||v==='calon_pemasukan';
+  var cats = isPem ? ['Gaji', 'Freelance', 'Investasi', 'Bisnis', 'Lainnya'] : ['Makanan', 'Transportasi', 'Langganan', 'Hutang', 'Tagihan', 'Hiburan', 'Kesehatan', 'Pendidikan', 'Lainnya'];
+  sel.innerHTML = cats.map(function(c){return '<option value="'+c+'">'+c+'</option>';}).join('') + '<option value="custom">Custom...</option>';
+  if (cats.includes(prev)) sel.value = prev;
+  else if (prev && prev !== 'custom') { sel.value = 'custom'; document.getElementById('f-custom-cat').value = prev; }
+  else sel.value = cats[0];
+  onCatChange();
 }
+function onCatChange(){ var c=document.getElementById('f-cat').value; document.getElementById('f-custom-cat-grp').style.display=c==='custom'?'flex':'none'; }
 function onRecChange(){ var c=document.getElementById('f-rec').checked; document.getElementById('rec-opts').classList.toggle('hide',!c); updPrev(); }
-function onFreqChange(){ var f=document.getElementById('f-freq').value; document.getElementById('f-custom-grp').classList.toggle('hide', f!=='custom'); updPrev(); }
+function onFreqChange(){ var f=document.getElementById('f-freq').value; document.getElementById('f-custom-grp').style.display=f==='custom'?'flex':'none'; updPrev(); }
 function updPrev(){
   var el=document.getElementById('rec-prev');
   if(!document.getElementById('f-rec').checked){el.textContent='';return;}
@@ -881,7 +908,7 @@ function openModalTrx(){
   document.getElementById('eid').value='';
   document.getElementById('f-date').value=today;
   document.getElementById('f-custom-days').value='';
-  document.getElementById('f-custom-grp').classList.add('hide');
+  document.getElementById('f-custom-grp').style.display='none';
   setTimeout(function(){lucide.createIcons();},50);
 }
 function openModalAs(type){
@@ -905,7 +932,9 @@ function closeModal(id){
     document.getElementById('f-date').value=today;
     document.getElementById('rec-sec').style.display='none';
     document.getElementById('f-acc-grp').style.display='none';
-    document.getElementById('f-custom-grp').classList.add('hide');
+    document.getElementById('f-custom-cat-grp').style.display='none';
+    document.getElementById('f-custom-cat').value='';
+    document.getElementById('f-custom-grp').style.display='none';
     document.getElementById('f-custom-days').value='';
     document.getElementById('rec-prev').textContent='';
   }
