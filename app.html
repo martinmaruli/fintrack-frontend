@@ -537,7 +537,7 @@ var today = gmt7.toISOString().split('T')[0];
 document.getElementById('f-date').value = today;
 
 // ===== AUTH =====
-let SUMMARY = { income:0, expense:0, projected_income:0, projected_expense:0, balance:0, projected_balance:0 };
+
 
 function getToken() { return localStorage.getItem('ft_token'); }
 function getUser()  { try { return JSON.parse(localStorage.getItem('ft_user')); } catch(e){ return null; } }
@@ -593,15 +593,13 @@ async function apiLoadAll() {
   try {
     await apiFetch('/api/transactions/auto-process', { method: 'POST', body: JSON.stringify({ today: today }) });
 
-    var [ra, rs, rt] = await Promise.all([
+    var [ra, rt] = await Promise.all([
       apiFetch('/api/accounts'),
-      apiFetch('/api/transactions/summary'),
-      apiFetch('/api/transactions/dashboard')
+      apiFetch('/api/transactions')
     ]);
-    if (!ra||!rs||!rt||!ra.ok||!rs.ok||!rt.ok) return false;
+    if (!ra||!rt||!ra.ok||!rt.ok) return false;
     
     ACCS = (await ra.json()).map(rowToAcc);
-    SUMMARY = await rs.json();
     DB = (await rt.json()).map(rowToTrx);
 
     if (ACCS.length) auid = Math.max.apply(null, ACCS.map(function(x){return x.id;})) + 1;
@@ -612,15 +610,15 @@ async function apiLoadAll() {
 async function apiInsertTrx(t) {
   try {
     var res = await apiFetch('/api/transactions', {method:'POST', body:JSON.stringify(trxPld(t))});
-    if (res && res.ok) { var r=await res.json(); t.id=r.id; uid=r.id+1; saveLS(); await refreshSummary(); render(); }
+    if (res && res.ok) { var r=await res.json(); t.id=r.id; uid=r.id+1; saveLS(); render(); }
   } catch(e) { console.warn(e); }
 }
 async function apiUpdateTrx(t) {
-  try { await apiFetch('/api/transactions/'+t.id, {method:'PUT', body:JSON.stringify(trxPld(t))}); saveLS(); await refreshSummary(); render(); }
+  try { await apiFetch('/api/transactions/'+t.id, {method:'PUT', body:JSON.stringify(trxPld(t))}); saveLS(); render(); }
   catch(e) { console.warn(e); }
 }
 async function apiDeleteTrx(id) {
-  try { await apiFetch('/api/transactions/'+id, {method:'DELETE'}); saveLS(); await refreshSummary(); render(); }
+  try { await apiFetch('/api/transactions/'+id, {method:'DELETE'}); saveLS(); render(); }
   catch(e) { console.warn(e); }
 }
 async function apiInsertAcc(a) {
@@ -645,10 +643,14 @@ function getAcc(id) { id=parseInt(id); for(var i=0;i<ACCS.length;i++) if(ACCS[i]
 function accBal(accId) {
   var acc = getAcc(accId);
   if (!acc) return 0;
-  // Since DB is paginated, we don't calculate balance by summing DB anymore.
-  // Instead, the backend should provide account balances in ACCS if needed.
-  // For now, return init.
-  return acc.init;
+  var bal = acc.init;
+  for (var i=0;i<DB.length;i++) {
+    if (parseInt(DB[i].accId)===parseInt(accId)) {
+      if (DB[i].type==='income') bal += DB[i].amt;
+      else if (DB[i].type==='expense') bal -= DB[i].amt;
+    }
+  }
+  return bal;
 }
 function accLabel(accId) {
   var a = getAcc(accId);
@@ -961,23 +963,25 @@ document.getElementById('m-trx').addEventListener('click',function(e){if(e.targe
 document.getElementById('m-acc').addEventListener('click',function(e){if(e.target===this)closeModal('m-acc');});
 
 // ===== RENDER =====
-async function refreshSummary() {
-  try {
-    var res = await apiFetch('/api/transactions/summary');
-    if (res && res.ok) SUMMARY = await res.json();
-  } catch(e) {}
-}
 
 function render(){
-  var mi = SUMMARY.income || 0, me = SUMMARY.expense || 0, bal = SUMMARY.balance || 0;
-  var cm = SUMMARY.projected_income || 0, ck = SUMMARY.projected_expense || 0, proj = SUMMARY.projected_balance || 0;
+  var mi=0, me=0, cm=0, ck=0;
+  for(var i=0;i<DB.length;i++) {
+    if(DB[i].type==='income') mi+=DB[i].amt;
+    else if(DB[i].type==='expense') me+=DB[i].amt;
+    else if(DB[i].type==='projected_income') cm+=DB[i].amt;
+    else if(DB[i].type==='projected_expense') ck+=DB[i].amt;
+  }
+  var initBal=0; for(var j=0;j<ACCS.length;j++) initBal+=ACCS[j].init;
+  var bal = initBal + mi - me;
+  var proj = bal + cm - ck;
 
   setKV('kv-i',mi); setKV('kv-e',me); setKV('kv-b',bal); setKV('kv-p',proj - bal);
   setKV('lv-i',mi); setKV('lv-e',me); setKV('lv-b',bal); setKV('lv-p',proj);
-  document.getElementById('km-i').textContent = 'Total';
-  document.getElementById('km-e').textContent = 'Total';
-  document.getElementById('lbl-cm').textContent = rpf(cm) + ' diproyeksikan';
-  document.getElementById('lbl-ck').textContent = rpf(ck) + ' diproyeksikan';
+  document.getElementById('km-i').textContent = DB.filter(function(x){return x.type==='income';}).length+' '+t('nav_transaction').toLowerCase();
+  document.getElementById('km-e').textContent = DB.filter(function(x){return x.type==='expense';}).length+' '+t('nav_transaction').toLowerCase();
+  document.getElementById('lbl-cm').textContent = rpf(cm) + ' '+t('nav_proj_in').toLowerCase();
+  document.getElementById('lbl-ck').textContent = rpf(ck) + ' '+t('nav_proj_out').toLowerCase();
 
   renderAccCards('dash-acc', true);
   renderAccCards('acc-grid-full', false);
@@ -995,7 +999,10 @@ function render(){
 }
 
 function getTotalBalance(){
-  return SUMMARY.balance || 0;
+  var initBal=0; for(var j=0;j<ACCS.length;j++) initBal+=ACCS[j].init;
+  var mi=0,me=0;
+  for(var i=0;i<DB.length;i++){if(DB[i].type==='income')mi+=DB[i].amt;else if(DB[i].type==='expense')me+=DB[i].amt;}
+  return initBal+mi-me;
 }
 
 function setKV(id,val){ var el=document.getElementById(id); if(!el)return; el.textContent=rp(val); el.style.color=val<0?'var(--err)':''; }
@@ -1039,7 +1046,7 @@ function renderAccCards(containerId, mini){
   }).join('');
 }
 
-function typeInfo(t){ var m={income:[t('income'),'bsuc'],expense:[t('expense'),'berr'],projected_income:[t('projected_income'),'bgld'],projected_expense:[t('projected_expense'),'bora']}; return m[t]||[t,'bpri']; }
+function typeInfo(tp){ var m={income:[t('nav_income'),'bsuc'],expense:[t('nav_outcome'),'berr'],projected_income:[t('nav_proj_in'),'bgld'],projected_expense:[t('nav_proj_out'),'bora']}; return m[tp]||[tp,'bpri']; }
 function amtCls(t){ return {income:'ti',expense:'te',projected_income:'tci',projected_expense:'tce'}[t]||''; }
 
 function renderDashTable(id, list){
@@ -1190,13 +1197,13 @@ function renderReport(fil,mi,me,bal,cm,ck,proj){
 
 // ===== NAV =====
 var vmeta={
-  dashboard:['Dashboard','Ringkasan keuangan Anda'],
-  akun:['Bank & Wallet','Manage all your financial accounts'],
-  income:['Income','Income that has been received'],
-  expense:['Outcome','Expenses that have occurred'],
-  cp:['Projected Income','Income template — can repeat automatically'],
-  ck:['Projected Outcome','Subscription, cicilan, hutang — bisa berulang'],
-  laporan:['Report','Report keuangan lengkap'],
+  dashboard:['nav_dashboard','dash_desc'],
+  akun:['nav_accounts','acc_desc'],
+  income:['nav_income','inc_desc'],
+  expense:['nav_outcome','out_desc'],
+  cp:['nav_proj_in','pi_desc'],
+  ck:['nav_proj_out','po_desc'],
+  laporan:['nav_report','rep_desc'],
 };
 function toggleSubmenu(id){
   var sub = document.getElementById(id);
@@ -1210,7 +1217,7 @@ function toggleSubmenu(id){
   }
   lucide.createIcons();
 }
-async function gv(v,el){
+function gv(v,el){
   document.querySelectorAll('.view').forEach(function(x){x.classList.remove('on');});
   document.querySelectorAll('.nit').forEach(function(x){x.classList.remove('on');});
   var ve=document.getElementById('view-'+v); if(ve)ve.classList.add('on');
@@ -1218,25 +1225,6 @@ async function gv(v,el){
   var m=vmeta[v]||[v,''];
   document.getElementById('ptitle').textContent=t(m[0]);
   document.getElementById('psub').textContent=t(m[1]);
-  
-  // Fetch specific menu data
-  var route = null;
-  if(v === 'income') route = '/api/transactions/income';
-  else if(v === 'expense') route = '/api/transactions/outcome';
-  else if(v === 'cp') route = '/api/transactions/projected-income';
-  else if(v === 'ck') route = '/api/transactions/projected-outcome';
-  else if(v === 'report' || v === 'akun') route = '/api/transactions/report';
-  else if(v === 'dashboard') route = '/api/transactions/dashboard';
-  
-  if (route) {
-    try {
-      var res = await apiFetch(route);
-      if (res && res.ok) {
-        DB = (await res.json()).map(rowToTrx);
-      }
-    } catch(e) { console.error('Failed fetching menu specific route', e); }
-  }
-  
   render();
 }
 function setPeriod(p,el){ period=p; document.querySelectorAll('.pt').forEach(function(x){x.classList.remove('on');}); el.classList.add('on'); render(); }
