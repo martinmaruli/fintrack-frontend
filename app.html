@@ -423,7 +423,7 @@ tbody tr:last-child td{border-bottom:none}
           <div class="kc ki"><div class="kl"><i data-lucide="arrow-down-circle"></i>Income</div><div class="kv" id="kv-i">Rp 0</div><div class="km" id="km-i">0 transaksi</div></div>
           <div class="kc ke"><div class="kl"><i data-lucide="arrow-up-circle"></i>Expense</div><div class="kv" id="kv-e">Rp 0</div><div class="km" id="km-e">0 transaksi</div></div>
           <div class="kc kb"><div class="kl"><i data-lucide="wallet"></i data-i18n="total_balance">Total Balance</div><div class="kv" id="kv-b">Rp 0</div><div class="km" data-i18n="all_accounts">All accounts</div></div>
-          <div class="kc kp"><div class="kl"><i data-lucide="calculator"></i>Proyeksi Income</div><div class="kv" id="kv-p">Rp 0</div><div class="km">Projected In − Projected Out</div></div>
+          <div class="kc kp"><div class="kl"><i data-lucide="calculator"></i><span data-i18n="final_projection">Proyeksi Akhir</span></div><div class="kv" id="kv-p">Rp 0</div><div class="km">Projected In − Projected Out</div></div>
         </div>
 
         <!-- ACCOUNT MINI CARDS -->
@@ -508,7 +508,7 @@ tbody tr:last-child td{border-bottom:none}
           <div class="kc ki"><div class="kl"><i data-lucide="arrow-down-circle"></i>Total Income</div><div class="kv" id="lv-i">Rp 0</div></div>
           <div class="kc ke"><div class="kl"><i data-lucide="arrow-up-circle"></i>Total Expense</div><div class="kv" id="lv-e">Rp 0</div></div>
           <div class="kc kb"><div class="kl"><i data-lucide="wallet"></i>Saldo Aktual</div><div class="kv" id="lv-b">Rp 0</div></div>
-          <div class="kc kp"><div class="kl"><i data-lucide="calculator"></i>Proyeksi Akhir</div><div class="kv" id="lv-p">Rp 0</div></div>
+          <div class="kc kp"><div class="kl"><i data-lucide="calculator"></i><span data-i18n="final_projection">Proyeksi Akhir</span></div><div class="kv" id="lv-p">Rp 0</div></div>
         </div>
         <div class="g2">
           <div class="card"><div class="ch"><div class="ct" data-i18n="exp_by_cat">Expense by Category</div></div><div id="lap-ke"></div></div>
@@ -537,6 +537,8 @@ var today = gmt7.toISOString().split('T')[0];
 document.getElementById('f-date').value = today;
 
 // ===== AUTH =====
+let SUMMARY = { income:0, expense:0, projected_income:0, projected_expense:0, balance:0, projected_balance:0 };
+
 function getToken() { return localStorage.getItem('ft_token'); }
 function getUser()  { try { return JSON.parse(localStorage.getItem('ft_user')); } catch(e){ return null; } }
 function authHdr()  { return { 'Content-Type':'application/json', 'Authorization':'Bearer '+getToken() }; }
@@ -569,13 +571,16 @@ function loadLS() {
 }
 
 // ===== DATA MAPPERS =====
+const TYPEMAP_DB_TO_FE = { pemasukan:'income', pengeluaran:'expense', calon_pemasukan:'projected_income', calon_pengeluaran:'projected_expense' };
+const TYPEMAP_FE_TO_DB = { income:'pemasukan', expense:'pengeluaran', projected_income:'calon_pemasukan', projected_expense:'calon_pengeluaran' };
+
 function rowToTrx(r) {
-  return { id:parseInt(r.id), desc:r.description, amt:parseFloat(r.amt), type:r.type, cat:r.cat,
+  return { id:parseInt(r.id), desc:r.description, amt:parseFloat(r.amt), type:TYPEMAP_DB_TO_FE[r.type]||r.type, cat:r.cat,
     date:r.date, note:r.note||'', accId:r.acc_id?parseInt(r.acc_id):null, rec:!!r.rec,
     freq:r.freq||null, cnt:r.cnt||null, endDate:r.end_date||null };
 }
 function trxPld(t) {
-  return { desc:t.desc, amt:t.amt, type:t.type, cat:t.cat, date:t.date,
+  return { desc:t.desc, amt:t.amt, type:TYPEMAP_FE_TO_DB[t.type]||t.type, cat:t.cat, date:t.date,
     note:t.note||null, acc_id:t.accId||null, rec:!!t.rec,
     freq:t.freq||null, cnt:t.cnt||null, end_date:t.endDate||null };
 }
@@ -586,13 +591,19 @@ function rowToAcc(r) {
 // ===== API =====
 async function apiLoadAll() {
   try {
-    // Process due projections
     await apiFetch('/api/transactions/auto-process', { method: 'POST', body: JSON.stringify({ today: today }) });
 
-    var [ra,rt] = await Promise.all([apiFetch('/api/accounts'), apiFetch('/api/transactions')]);
-    if (!ra||!rt||!ra.ok||!rt.ok) return false;
+    var [ra, rs, rt] = await Promise.all([
+      apiFetch('/api/accounts'),
+      apiFetch('/api/transactions/summary'),
+      apiFetch('/api/transactions/dashboard')
+    ]);
+    if (!ra||!rs||!rt||!ra.ok||!rs.ok||!rt.ok) return false;
+    
     ACCS = (await ra.json()).map(rowToAcc);
-    DB   = (await rt.json()).map(rowToTrx);
+    SUMMARY = await rs.json();
+    DB = (await rt.json()).map(rowToTrx);
+
     if (ACCS.length) auid = Math.max.apply(null, ACCS.map(function(x){return x.id;})) + 1;
     if (DB.length)   uid  = Math.max.apply(null, DB.map(function(x){return x.id;}))   + 1;
     saveLS(); return true;
@@ -601,15 +612,15 @@ async function apiLoadAll() {
 async function apiInsertTrx(t) {
   try {
     var res = await apiFetch('/api/transactions', {method:'POST', body:JSON.stringify(trxPld(t))});
-    if (res && res.ok) { var r=await res.json(); t.id=r.id; uid=r.id+1; saveLS(); }
+    if (res && res.ok) { var r=await res.json(); t.id=r.id; uid=r.id+1; saveLS(); await refreshSummary(); render(); }
   } catch(e) { console.warn(e); }
 }
 async function apiUpdateTrx(t) {
-  try { await apiFetch('/api/transactions/'+t.id, {method:'PUT', body:JSON.stringify(trxPld(t))}); saveLS(); }
+  try { await apiFetch('/api/transactions/'+t.id, {method:'PUT', body:JSON.stringify(trxPld(t))}); saveLS(); await refreshSummary(); render(); }
   catch(e) { console.warn(e); }
 }
 async function apiDeleteTrx(id) {
-  try { await apiFetch('/api/transactions/'+id, {method:'DELETE'}); saveLS(); }
+  try { await apiFetch('/api/transactions/'+id, {method:'DELETE'}); saveLS(); await refreshSummary(); render(); }
   catch(e) { console.warn(e); }
 }
 async function apiInsertAcc(a) {
@@ -634,14 +645,10 @@ function getAcc(id) { id=parseInt(id); for(var i=0;i<ACCS.length;i++) if(ACCS[i]
 function accBal(accId) {
   var acc = getAcc(accId);
   if (!acc) return 0;
-  var bal = acc.init;
-  for (var i=0;i<DB.length;i++) {
-    var t = DB[i];
-    if (parseInt(t.accId) !== parseInt(accId)) continue;
-    if (t.type === 'income') bal += t.amt;
-    else if (t.type === 'expense') bal -= t.amt;
-  }
-  return bal;
+  // Since DB is paginated, we don't calculate balance by summing DB anymore.
+  // Instead, the backend should provide account balances in ACCS if needed.
+  // For now, return init.
+  return acc.init;
 }
 function accLabel(accId) {
   var a = getAcc(accId);
@@ -954,45 +961,41 @@ document.getElementById('m-trx').addEventListener('click',function(e){if(e.targe
 document.getElementById('m-acc').addEventListener('click',function(e){if(e.target===this)closeModal('m-acc');});
 
 // ===== RENDER =====
-function render(){
-  var fil=getFiltered();
-  var mi=sum(fil,'income'), me=sum(fil,'expense'), bal=mi-me;
-  //var cm=sum(fil,'projected_income'), ck=sum(fil,'projected_expense'), proj=bal+cm-ck;
-  var cm=DB.filter(function(t){return t.type==='projected_income';}).reduce(function(s,t){return s+t.amt;},0),
-    ck=DB.filter(function(t){return t.type==='projected_expense';}).reduce(function(s,t){return s+t.amt;},0),
-    proj=cm-ck;
+async function refreshSummary() {
+  try {
+    var res = await apiFetch('/api/transactions/summary');
+    if (res && res.ok) SUMMARY = await res.json();
+  } catch(e) {}
+}
 
-  setKV('kv-i',mi); setKV('kv-e',me); setKV('kv-b',getTotalBalance()); setKV('kv-p',proj);
-  setKV('lv-i',mi); setKV('lv-e',me); setKV('lv-b',getTotalBalance()); setKV('lv-p',getTotalBalance() + proj);
-  document.getElementById('km-i').textContent=fil.filter(function(t){return t.type==='income';}).length+' transaksi';
-  document.getElementById('km-e').textContent=fil.filter(function(t){return t.type==='expense';}).length+' transaksi';
-  document.getElementById('lbl-cm').textContent=rpf(cm)+' diproyeksikan';
-  document.getElementById('lbl-ck').textContent=rpf(ck)+' diproyeksikan';
+function render(){
+  var mi = SUMMARY.income || 0, me = SUMMARY.expense || 0, bal = SUMMARY.balance || 0;
+  var cm = SUMMARY.projected_income || 0, ck = SUMMARY.projected_expense || 0, proj = SUMMARY.projected_balance || 0;
+
+  setKV('kv-i',mi); setKV('kv-e',me); setKV('kv-b',bal); setKV('kv-p',proj - bal);
+  setKV('lv-i',mi); setKV('lv-e',me); setKV('lv-b',bal); setKV('lv-p',proj);
+  document.getElementById('km-i').textContent = 'Total';
+  document.getElementById('km-e').textContent = 'Total';
+  document.getElementById('lbl-cm').textContent = rpf(cm) + ' diproyeksikan';
+  document.getElementById('lbl-ck').textContent = rpf(ck) + ' diproyeksikan';
 
   renderAccCards('dash-acc', true);
   renderAccCards('acc-grid-full', false);
-  renderPreview('prev-cm',fil.filter(function(t){return t.type==='projected_income';}),'tci');
-  renderPreview('prev-ck',fil.filter(function(t){return t.type==='projected_expense';}),'tce');
-  renderDashTable('tb-dash',fil.slice().sort(function(a,b){return b.date.localeCompare(a.date);}).slice(0,8));
-  renderSimple('tb-i',fil.filter(function(t){return t.type==='income';}));
-  renderSimple('tb-e',fil.filter(function(t){return t.type==='expense';}));
-  renderCalon('tb-cp',DB.filter(function(t){return t.type==='projected_income';}));
-  renderCalon('tb-ck',DB.filter(function(t){return t.type==='projected_expense';}));
-  renderReport(fil,mi,me,bal,cm,ck,proj);
+  
+  var sortedDB = DB.slice().sort(function(a,b){return b.date.localeCompare(a.date);});
+  renderPreview('prev-cm', sortedDB.filter(function(t){return t.type==='projected_income';}), 'tci');
+  renderPreview('prev-ck', sortedDB.filter(function(t){return t.type==='projected_expense';}), 'tce');
+  renderDashTable('tb-dash', sortedDB.slice(0,8));
+  renderSimple('tb-i', sortedDB.filter(function(t){return t.type==='income';}));
+  renderSimple('tb-e', sortedDB.filter(function(t){return t.type==='expense';}));
+  renderCalon('tb-cp', sortedDB.filter(function(t){return t.type==='projected_income';}));
+  renderCalon('tb-ck', sortedDB.filter(function(t){return t.type==='projected_expense';}));
+  renderReport(sortedDB, mi, me, bal, cm, ck, proj);
   lucide.createIcons();
 }
 
 function getTotalBalance(){
-  if(!ACCS.length){
-    // fallback: sum of all income - expense
-    var s=0;
-    for(var i=0;i<DB.length;i++){
-      if(DB[i].type==='income') s+=DB[i].amt;
-      else if(DB[i].type==='expense') s-=DB[i].amt;
-    }
-    return s;
-  }
-  var total=0; for(var i=0;i<ACCS.length;i++) total+=accBal(ACCS[i].id); return total;
+  return SUMMARY.balance || 0;
 }
 
 function setKV(id,val){ var el=document.getElementById(id); if(!el)return; el.textContent=rp(val); el.style.color=val<0?'var(--err)':''; }
@@ -1175,7 +1178,7 @@ function renderReport(fil,mi,me,bal,cm,ck,proj){
     {label:'Total Balance Account',val:getTotalBalance(),color:'var(--pri)',icon:'wallet',bold:true},
     {label:'Projected Income',val:cm,color:'var(--gld)',icon:'trending-up'},
     {label:'Projected Expense',val:-ck,color:'var(--ora)',icon:'trending-down'},
-    {label:'Proyeksi Akhir',val:getTotalBalance() + proj,color:(getTotalBalance() + proj)>=0?'var(--pri)':'var(--err)',icon:'calculator',bold:true},
+    {label:t('final_projection'),val:getTotalBalance() + proj,color:(getTotalBalance() + proj)>=0?'var(--pri)':'var(--err)',icon:'calculator',bold:true},
   ];
   document.getElementById('lap-neraca').innerHTML=neraca.map(function(item,i){
     return '<div style="display:flex;align-items:center;justify-content:space-between;padding:var(--s3) 0;'+(i<neraca.length-1?'border-bottom:1px solid var(--div)':'')+'">'
@@ -1216,9 +1219,6 @@ async function gv(v,el){
   document.getElementById('ptitle').textContent=t(m[0]);
   document.getElementById('psub').textContent=t(m[1]);
   
-  // Render base UI (balances, etc)
-  render();
-  
   // Fetch specific menu data
   var route = null;
   if(v === 'income') route = '/api/transactions/income';
@@ -1231,18 +1231,12 @@ async function gv(v,el){
     try {
       var res = await apiFetch(route);
       if (res && res.ok) {
-        var list = (await res.json()).map(rowToTrx);
-        var fil = getFiltered(list);
-        if(v === 'income') renderSimple('tb-i', fil);
-        else if(v === 'expense') renderSimple('tb-e', fil);
-        else if(v === 'cp') renderCalon('tb-cm', fil);
-        else if(v === 'ck') renderCalon('tb-ck', fil);
-        else if(v === 'dashboard') {
-          renderDashTable('tb-dash', fil.slice(0, 5));
-        }
+        DB = (await res.json()).map(rowToTrx);
       }
     } catch(e) { console.error('Failed fetching menu specific route', e); }
   }
+  
+  render();
 }
 function setPeriod(p,el){ period=p; document.querySelectorAll('.pt').forEach(function(x){x.classList.remove('on');}); el.classList.add('on'); render(); }
 

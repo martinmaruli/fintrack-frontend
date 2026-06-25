@@ -56,6 +56,7 @@ const translations = {
     add_account: "Add Account",
     add: "Add",
     total_balance: "Total Balance",
+    final_projection: "Final Projection",
     all_accounts: "All accounts",
     
     // Sidebar
@@ -193,6 +194,7 @@ const translations = {
     add_account: "Tambah Akun",
     add: "Tambah",
     total_balance: "Total Saldo",
+    final_projection: "Proyeksi Akhir",
     all_accounts: "Semua rekening",
     
     // Sidebar
