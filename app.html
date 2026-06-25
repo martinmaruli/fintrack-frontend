@@ -757,6 +757,10 @@ document.getElementById('form-trx').addEventListener('submit',function(e){
   var isC=tp==='calon_pemasukan'||tp==='calon_pengeluaran';
   var isRec=isC&&document.getElementById('f-rec').checked;
   var accVal=document.getElementById('f-acc').value;
+    var freqVal = document.getElementById('f-freq').value;
+    var customDays = document.getElementById('f-custom-days').value;
+    var finalFreq = isRec ? (freqVal === 'custom' && customDays ? 'custom_' + customDays : freqVal) : null;
+    
   var data={
     desc:document.getElementById('f-desc').value.trim(),
     amt:parseFloat(document.getElementById('f-amt').value),
@@ -764,10 +768,6 @@ document.getElementById('form-trx').addEventListener('submit',function(e){
     date:document.getElementById('f-date').value,
     note:document.getElementById('f-note').value.trim(),
     accId: accVal ? parseInt(accVal) : null,
-    var freqVal = document.getElementById('f-freq').value;
-    var customDays = document.getElementById('f-custom-days').value;
-    var finalFreq = isRec ? (freqVal === 'custom' && customDays ? 'custom_' + customDays : freqVal) : null;
-    
     rec:isRec, freq:finalFreq,
     cnt:isRec?(document.getElementById('f-cnt').value||null):null,
     endDate:isRec?(document.getElementById('f-end').value||null):null
