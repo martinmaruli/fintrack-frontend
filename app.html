@@ -526,7 +526,7 @@ var API = 'https://fintrack-backend-khaki.vercel.app';
 // ===== STATE =====
 var DB = [], ACCS = [], uid = 1, auid = 1, period = 'bulan';
 var gmt7 = new Date(new Date().getTime() + (7 * 60 * 60 * 1000));
-var today = gmt7.toISOString().slice(0, 16);
+var today = gmt7.toISOString().split('T')[0];
 document.getElementById('f-date').value = today;
 
 // ===== AUTH =====
@@ -909,6 +909,10 @@ function openModalTrx(){
   document.getElementById('f-date').value=today;
   document.getElementById('f-custom-days').value='';
   document.getElementById('f-custom-grp').style.display='none';
+  document.getElementById('f-type').value='pemasukan';
+  onTypeChange();
+  populateAccSelect();
+  if (ACCS.length > 0) document.getElementById('f-acc').value = ACCS[0].id;
   setTimeout(function(){lucide.createIcons();},50);
 }
 function openModalAs(type){
@@ -1003,7 +1007,7 @@ function renderAccCards(containerId, mini){
     }
     var typeCls={bank:'bblu',ewallet:'bpur',cash:'bsuc'}[a.type]||'bpri';
     var balColor=bal>=0?'var(--pri)':'var(--err)';
-    var btnExtra=mini?'':'<button class="btn bg bsm" onclick="showAccTrx('+a.id+')" style="margin-left:auto"><i data-lucide="list"></i>Riwayat</button>';
+    var btnExtra=mini?'':'<button class="btn bg bsm" onclick="showAccTrx('+a.id+')" style="width:100%;justify-content:center;margin-top:var(--s1)"><i data-lucide="list"></i>Lihat Riwayat</button>';
     return '<div class="acc-card">'
       +'<div class="acc-stripe" style="background:'+esc(a.color)+'"></div>'
       +'<div class="acc-head">'
@@ -1020,8 +1024,8 @@ function renderAccCards(containerId, mini){
       +'<div class="acc-stat-item" style="color:var(--suc)"><i data-lucide="arrow-down" style="width:11px;height:11px"></i>'+rpf(inAmt)+'</div>'
       +'<div class="acc-stat-item" style="color:var(--err)"><i data-lucide="arrow-up" style="width:11px;height:11px"></i>'+rpf(outAmt)+'</div>'
       +'</div>'
-      +btnExtra
       +'</div>'
+      +btnExtra
       +'</div>';
   }).join('');
 }
