@@ -1225,6 +1225,7 @@ async function gv(v,el){
   else if(v === 'expense') route = '/api/transactions/outcome';
   else if(v === 'cp') route = '/api/transactions/projected-income';
   else if(v === 'ck') route = '/api/transactions/projected-outcome';
+  else if(v === 'report' || v === 'akun') route = '/api/transactions/report';
   else if(v === 'dashboard') route = '/api/transactions/dashboard';
   
   if (route) {
