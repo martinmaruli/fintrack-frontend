@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FinTrack — Pencatat Keuangan</title>
+<title data-i18n="app_title">FinTrack — Financial Tracker</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..700&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <style>
@@ -91,28 +91,50 @@ footer{text-align:center;padding:var(--s8);color:var(--mut);font-size:var(--xs);
 
 <div class="mb hide" id="m-auth">
   <div class="mo">
-    <div class="mttl"><i data-lucide="log-in"></i><span id="auth-ttl">Masuk ke FinTrack</span></div>
+    <div class="mttl"><i data-lucide="log-in"></i><span id="auth-ttl" data-i18n="login_title">Login to FinTrack</span></div>
     <div class="tabs">
-      <div class="tab on" id="tab-in" onclick="switchTab('login')">Masuk</div>
-      <div class="tab" id="tab-reg" onclick="switchTab('register')">Daftar</div>
+      <div class="tab on" id="tab-in" onclick="switchTab('login')" data-i18n="login">Login</div>
+      <div class="tab" id="tab-reg" onclick="switchTab('register')" data-i18n="register">Register</div>
     </div>
     <div class="msg err" id="auth-err"></div>
     <div class="msg ok"  id="auth-ok"></div>
     <form class="fg" id="form-auth" onsubmit="submitAuth(event)">
-      <div class="fgrp">
-        <label class="fl">Email</label>
-        <input class="fi" id="a-email" type="email" placeholder="email@kamu.com" required autocomplete="email">
+      <!-- Step 1: Email & Password -->
+      <div id="step-1">
+        <div class="fgrp">
+          <label class="fl" data-i18n="email">Email</label>
+          <input class="fi" id="a-email" type="email" placeholder="you@email.com" required autocomplete="email" data-i18n="email">
+        </div>
+        <div class="fgrp" style="margin-top:var(--s4)">
+          <label class="fl" data-i18n="password">Password</label>
+          <input class="fi" id="a-pass" type="password" placeholder="Minimum 8 characters" required minlength="8" autocomplete="current-password" data-i18n="password">
+        </div>
+        <div class="fgrp" id="pass-hint" style="display:none;margin-top:var(--s1)">
+          <p style="font-size:var(--xs);color:var(--mut)" data-i18n="pass_hint">⚠️ Must contain an uppercase letter and a number.</p>
+        </div>
       </div>
-      <div class="fgrp">
-        <label class="fl">Password</label>
-        <input class="fi" id="a-pass" type="password" placeholder="Minimal 8 karakter" required minlength="8" autocomplete="current-password">
+      
+      <!-- Step 2: OTP Entry -->
+      <div id="step-otp" style="display:none">
+        <p style="font-size:var(--sm);margin-bottom:var(--s3);line-height:1.5" data-i18n="otp_msg">We have sent a 6-digit OTP code to your email (check Ethereal Email for dev). Enter the code below.</p>
+        <div class="fgrp">
+          <label class="fl" data-i18n="otp_code">OTP Code</label>
+          <input class="fi" id="a-otp" type="text" placeholder="123456" maxlength="6" pattern="[0-9]{6}">
+        </div>
       </div>
-      <div class="fgrp" id="pass-hint" style="display:none">
-        <p style="font-size:var(--xs);color:var(--mut)">⚠️ Harus mengandung huruf kapital dan angka.</p>
+
+      <!-- Step 3: PIN Entry (Setup or Verify) -->
+      <div id="step-pin" style="display:none">
+        <p style="font-size:var(--sm);margin-bottom:var(--s3);line-height:1.5" id="pin-desc" data-i18n="pin_verify_msg">Enter your 6-digit security PIN.</p>
+        <div class="fgrp">
+          <label class="fl" data-i18n="pin_security">Security PIN</label>
+          <input class="fi" id="a-pin" type="password" placeholder="••••••" maxlength="6" pattern="[0-9]{6}">
+        </div>
       </div>
+
       <div class="fa">
-        <button type="button" class="btn bg" onclick="document.getElementById('m-auth').classList.add('hide')">Batal</button>
-        <button type="submit" class="btn bp" id="auth-btn"><i data-lucide="log-in"></i><span id="auth-btxt">Masuk</span></button>
+        <button type="button" class="btn bg" onclick="document.getElementById('m-auth').classList.add('hide')" data-i18n="cancel">Cancel</button>
+        <button type="submit" class="btn bp" id="auth-btn"><i data-lucide="log-in"></i><span id="auth-btxt" data-i18n="login">Login</span></button>
       </div>
     </form>
   </div>
@@ -124,37 +146,41 @@ footer{text-align:center;padding:var(--s8);color:var(--mut);font-size:var(--xs);
     Fin<span>Track</span>
   </a>
   <div class="nav-r">
-    <button class="theme-btn" onclick="toggleTheme()"><i id="thm-ic" data-lucide="moon" style="width:18px;height:18px;display:block"></i></button>
-    <button class="btn bg" onclick="openAuth('login')">Masuk</button>
-    <button class="btn bp" onclick="openAuth('register')">Daftar Gratis</button>
+    <button class="theme-btn" onclick="toggleLanguage()" title="Switch Language" style="display:flex;align-items:center;gap:4px">
+      <i data-lucide="globe" style="width:18px;height:18px"></i> <span style="font-size:12px;font-weight:bold" id="lang-ind">EN</span>
+    </button>
+    <button class="theme-btn" onclick="toggleTheme()" title="Toggle Theme"><i id="thm-ic" data-lucide="moon" style="width:18px;height:18px;display:block"></i></button>
+    <button class="btn bg" onclick="openAuth('login')" data-i18n="login">Login</button>
+    <button class="btn bp" onclick="openAuth('register')" data-i18n="sign_up_free">Sign Up Free</button>
   </div>
 </nav>
 
 <section class="hero">
-  <div class="badge"><i data-lucide="shield-check" style="width:12px;height:12px"></i>Gratis &amp; Aman</div>
-  <h1>Kelola <span>Keuangan</span><br>Kamu Lebih Cerdas</h1>
-  <p class="sub">Catat pemasukan, pengeluaran, rekening, dan proyeksi keuangan dalam satu tempat. Sinkron di semua device.</p>
+  <div class="badge"><i data-lucide="shield-check" style="width:12px;height:12px"></i><span data-i18n="hero_badge">Free &amp; Secure</span></div>
+  <h1 data-i18n="hero_title">Manage <span>Finances</span><br>Smarter</h1>
+  <p class="sub" data-i18n="hero_sub">Track income, expenses, accounts, and financial projections in one place. Synced across all devices.</p>
   <div class="ctas">
-    <button class="btn bp btnlg" onclick="openAuth('register')"><i data-lucide="rocket"></i>Mulai Sekarang — Gratis</button>
-    <button class="btn bg btnlg" onclick="openAuth('login')"><i data-lucide="log-in"></i>Sudah punya akun</button>
+    <button class="btn bp btnlg" onclick="openAuth('register')"><i data-lucide="rocket"></i><span data-i18n="hero_cta_start">Get Started — Free</span></button>
+    <button class="btn bg btnlg" onclick="openAuth('login')"><i data-lucide="log-in"></i><span data-i18n="hero_cta_login">Already have an account</span></button>
   </div>
 </section>
 
 <section class="feats">
-  <h2 class="ft">Semua yang kamu butuhkan</h2>
-  <p class="fs">Fitur lengkap untuk manajemen keuangan pribadi yang lebih teratur</p>
+  <h2 class="ft" data-i18n="feat_title">Everything you need</h2>
+  <p class="fs" data-i18n="feat_sub">Complete features for organized personal financial management</p>
   <div class="fg2">
-    <div class="fc"><div class="fic" style="background:var(--prhl);color:var(--pri)"><i data-lucide="wallet"></i></div><div class="fn">Multi Rekening &amp; Dompet</div><div class="fd">Kelola bank, e-wallet, dan tunai dalam satu dashboard yang rapi.</div></div>
-    <div class="fc"><div class="fic" style="background:var(--suchl);color:var(--suc)"><i data-lucide="trending-up"></i></div><div class="fn">Proyeksi Keuangan</div><div class="fd">Estimasi saldo akhir bulan berdasarkan pemasukan dan pengeluaran rutin.</div></div>
-    <div class="fc"><div class="fic" style="background:var(--gldhl);color:var(--gld)"><i data-lucide="repeat"></i></div><div class="fn">Transaksi Berulang</div><div class="fd">Set cicilan atau langganan sekali, terhitung otomatis setiap periode.</div></div>
-    <div class="fc"><div class="fic" style="background:var(--bluhl);color:var(--blu)"><i data-lucide="bar-chart-2"></i></div><div class="fn">Laporan Visual</div><div class="fd">Analisis pengeluaran per kategori dan per rekening secara ringkas.</div></div>
-    <div class="fc"><div class="fic" style="background:var(--purhl);color:var(--pur)"><i data-lucide="smartphone"></i></div><div class="fn">Akses Multi Device</div><div class="fd">Data tersimpan di cloud, buka dari HP, laptop, atau tablet kapan saja.</div></div>
-    <div class="fc"><div class="fic" style="background:var(--orahl);color:var(--ora)"><i data-lucide="shield"></i></div><div class="fn">Aman &amp; Terenkripsi</div><div class="fd">Password di-hash dengan bcrypt. Data kamu tidak bisa diakses orang lain.</div></div>
+    <div class="fc"><div class="fic" style="background:var(--prhl);color:var(--pri)"><i data-lucide="wallet"></i></div><div class="fn" data-i18n="f1_t">Multi Accounts &amp; Wallets</div><div class="fd" data-i18n="f1_s">Manage bank, e-wallets, and cash in one neat dashboard.</div></div>
+    <div class="fc"><div class="fic" style="background:var(--suchl);color:var(--suc)"><i data-lucide="trending-up"></i></div><div class="fn" data-i18n="f2_t">Financial Projections</div><div class="fd" data-i18n="f2_s">Estimate end-of-month balance based on routine income and expenses.</div></div>
+    <div class="fc"><div class="fic" style="background:var(--gldhl);color:var(--gld)"><i data-lucide="repeat"></i></div><div class="fn" data-i18n="f3_t">Recurring Transactions</div><div class="fd" data-i18n="f3_s">Set up installments or subscriptions once, calculated automatically every period.</div></div>
+    <div class="fc"><div class="fic" style="background:var(--bluhl);color:var(--blu)"><i data-lucide="bar-chart-2"></i></div><div class="fn" data-i18n="f4_t">Visual Reports</div><div class="fd" data-i18n="f4_s">Analyze expenses by category and account briefly.</div></div>
+    <div class="fc"><div class="fic" style="background:var(--purhl);color:var(--pur)"><i data-lucide="smartphone"></i></div><div class="fn" data-i18n="f5_t">Multi Device Access</div><div class="fd" data-i18n="f5_s">Data stored in the cloud, access from phone, laptop, or tablet anytime.</div></div>
+    <div class="fc"><div class="fic" style="background:var(--orahl);color:var(--ora)"><i data-lucide="shield"></i></div><div class="fn" data-i18n="f6_t">Secure &amp; Encrypted</div><div class="fd" data-i18n="f6_s">Passwords are hashed with bcrypt. Your data cannot be accessed by others.</div></div>
   </div>
 </section>
 
-<footer>© 2026 FinTrack &nbsp;·&nbsp; Dibuat dengan ❤️ untuk keuangan yang lebih teratur</footer>
+<footer data-i18n="footer">© 2026 FinTrack &nbsp;·&nbsp; Made with ❤️ for better organized finances</footer>
 
+<script src="i18n.js"></script>
 <script>
 var API = 'https://fintrack-backend-khaki.vercel.app'; // ← Ganti dengan URL Vercel kamu
 
@@ -170,41 +196,123 @@ function openAuth(mode) {
   document.getElementById('m-auth').classList.remove('hide');
   setTimeout(function(){ lucide.createIcons(); }, 50);
 }
+var tempToken = null;
+
 function switchTab(mode) {
   var isLogin = mode === 'login';
   document.getElementById('tab-in').classList.toggle('on', isLogin);
   document.getElementById('tab-reg').classList.toggle('on', !isLogin);
-  document.getElementById('auth-ttl').textContent  = isLogin ? 'Masuk ke FinTrack' : 'Daftar FinTrack';
+  document.getElementById('auth-ttl').textContent  = isLogin ? t('login_title') : t('register_title');
   var btxt = document.getElementById('auth-btxt');
-    if (btxt) btxt.textContent = isLogin ? 'Masuk' : 'Daftar';
+  if (btxt) btxt.textContent = isLogin ? t('login') : t('register');
   document.getElementById('pass-hint').style.display = isLogin ? 'none' : '';
   document.getElementById('auth-err').classList.remove('show');
   document.getElementById('auth-ok').classList.remove('show');
   document.getElementById('m-auth').dataset.mode = mode;
+  
+  // Reset steps
+  document.getElementById('step-1').style.display = 'block';
+  document.getElementById('step-otp').style.display = 'none';
+  document.getElementById('step-pin').style.display = 'none';
+  document.getElementById('a-email').required = true;
+  document.getElementById('a-pass').required = true;
+  document.getElementById('a-otp').required = false;
+  document.getElementById('a-pin').required = false;
+  document.getElementById('a-otp').value = '';
+  document.getElementById('a-pin').value = '';
+  
+  tempToken = null;
   lucide.createIcons();
 }
+
+function setStep(step, desc) {
+  document.getElementById('step-1').style.display = 'none';
+  document.getElementById('step-otp').style.display = 'none';
+  document.getElementById('step-pin').style.display = 'none';
+  document.getElementById('a-email').required = false;
+  document.getElementById('a-pass').required = false;
+  document.getElementById('a-otp').required = false;
+  document.getElementById('a-pin').required = false;
+  
+  if (step === 'otp') {
+    document.getElementById('step-otp').style.display = 'block';
+    document.getElementById('a-otp').required = true;
+    document.getElementById('auth-btxt').textContent = t('verify_otp');
+    document.getElementById('m-auth').dataset.mode = 'verify-otp';
+  } else if (step === 'set-pin') {
+    document.getElementById('step-pin').style.display = 'block';
+    document.getElementById('a-pin').required = true;
+    document.getElementById('pin-desc').textContent = t('pin_setup_msg');
+    document.getElementById('auth-btxt').textContent = t('save_pin');
+    document.getElementById('m-auth').dataset.mode = 'set-pin';
+  } else if (step === 'verify-pin') {
+    document.getElementById('step-pin').style.display = 'block';
+    document.getElementById('a-pin').required = true;
+    document.getElementById('pin-desc').textContent = t('pin_verify_msg');
+    document.getElementById('auth-btxt').textContent = t('verify_pin');
+    document.getElementById('m-auth').dataset.mode = 'verify-pin';
+  }
+}
+
+// Add event listener to update the lang-ind indicator
+window.addEventListener('languageChanged', function() {
+  document.getElementById('lang-ind').textContent = currentLang.toUpperCase();
+});
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('lang-ind').textContent = currentLang.toUpperCase();
+});
+
 async function submitAuth(e) {
   e.preventDefault();
-  var email = document.getElementById('a-email').value.trim();
-  var pass  = document.getElementById('a-pass').value;
   var mode  = document.getElementById('m-auth').dataset.mode || 'login';
   var btn   = document.getElementById('auth-btn');
   var errEl = document.getElementById('auth-err');
   var okEl  = document.getElementById('auth-ok');
+  
   errEl.classList.remove('show'); okEl.classList.remove('show');
-  btn.disabled = true; btn.innerHTML = '<i data-lucide="loader"></i><span id="auth-btxt">Memproses...</span>'; lucide.createIcons();
+  var origText = document.getElementById('auth-btxt').textContent;
+  btn.disabled = true; btn.innerHTML = '<i data-lucide="loader"></i><span id="auth-btxt">'+t('processing')+'</span>'; lucide.createIcons();
+  
   try {
+    var payload = {};
+    if (mode === 'login' || mode === 'register') {
+      payload = { email: document.getElementById('a-email').value.trim(), password: document.getElementById('a-pass').value };
+    } else if (mode === 'verify-otp') {
+      payload = { temp_token: tempToken, otp_code: document.getElementById('a-otp').value };
+    } else if (mode === 'set-pin' || mode === 'verify-pin') {
+      payload = { temp_token: tempToken, pin: document.getElementById('a-pin').value };
+    }
+
     var res  = await fetch(API + '/api/auth/' + mode, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email, password: pass })
+      body: JSON.stringify(payload)
     });
     var data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Terjadi kesalahan.');
+    
+    // Check if OTP/PIN flow needed (403 for not verified)
+    if (res.status === 403 && data.requires_otp) {
+      tempToken = data.temp_token;
+      setStep('otp');
+      throw new Error(data.error);
+    }
+    
+    if (!res.ok) throw new Error(data.error || t('err_occurred'));
+    
     if (mode === 'register') {
-      okEl.textContent = 'Pendaftaran berhasil! Silakan masuk.';
+      tempToken = data.temp_token;
+      setStep('otp');
+      okEl.textContent = t('reg_success');
       okEl.classList.add('show');
-      switchTab('login');
-    } else {
+    } else if (mode === 'verify-otp') {
+      tempToken = data.temp_token;
+      setStep('set-pin');
+      okEl.textContent = t('email_verified');
+      okEl.classList.add('show');
+    } else if (mode === 'login') {
+      tempToken = data.temp_token;
+      if (data.requires_set_pin) setStep('set-pin');
+      else setStep('verify-pin');
+    } else if (mode === 'set-pin' || mode === 'verify-pin') {
       localStorage.setItem('ft_token', data.token);
       localStorage.setItem('ft_user', JSON.stringify(data.user));
       window.location.href = 'app.html';
@@ -214,7 +322,7 @@ async function submitAuth(e) {
     errEl.classList.add('show');
   }
   btn.disabled = false;
-  btn.innerHTML = '<i data-lucide="log-in"></i><span id="auth-btxt">' + (mode==='login'?'Masuk':'Daftar') + '</span>';
+  btn.innerHTML = '<i data-lucide="log-in"></i><span id="auth-btxt">' + (mode==='login'?'Login':mode==='register'?'Register':origText) + '</span>';
   lucide.createIcons();
 }
 (function(){
