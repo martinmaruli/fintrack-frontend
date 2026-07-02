@@ -117,9 +117,13 @@ footer{text-align:center;padding:var(--s8);color:var(--mut);font-size:var(--xs);
           <label class="fl" data-i18n="email">Email</label>
           <input class="fi" id="a-email" type="email" placeholder="you@email.com" required autocomplete="email" data-i18n="email">
         </div>
-        <div class="fgrp" style="margin-top:var(--s4)">
+        <div class="fgrp" style="margin-top:var(--s4)" id="grp-pass">
           <label class="fl" data-i18n="password">Password</label>
-          <input class="fi" id="a-pass" type="password" placeholder="Minimum 8 characters" required minlength="8" autocomplete="current-password" data-i18n="password">
+          <div style="position:relative; display:flex; align-items:center;">
+            <input class="fi" id="a-pass" type="password" placeholder="Minimum 8 characters" required minlength="8" autocomplete="current-password" data-i18n="password" style="padding-right: 40px;">
+            <button type="button" tabindex="-1" onclick="togglePassword('a-pass', 'eye-pass')" style="position:absolute; right:10px; color:var(--mut); display:flex; align-items:center; justify-content:center;"><i id="eye-pass" data-lucide="eye" style="width:18px;height:18px;"></i></button>
+          </div>
+          <div style="text-align:right; margin-top:var(--s1)" id="btn-forgot-pass-div"><button type="button" style="font-size:var(--xs); color:var(--pri); font-weight:500;" onclick="startForgotPass()" data-i18n="forgot_password">Forgot Password?</button></div>
         </div>
         <div class="fgrp" id="pass-hint" style="display:none;margin-top:var(--s1)">
           <p style="font-size:var(--xs);color:var(--mut)" data-i18n="pass_hint">⚠️ Must contain an uppercase letter and a number.</p>
@@ -140,7 +144,25 @@ footer{text-align:center;padding:var(--s8);color:var(--mut);font-size:var(--xs);
         <p style="font-size:var(--sm);margin-bottom:var(--s3);line-height:1.5" id="pin-desc" data-i18n="pin_verify_msg">Enter your 6-digit security PIN.</p>
         <div class="fgrp">
           <label class="fl" data-i18n="pin_security">Security PIN</label>
-          <input class="fi" id="a-pin" type="password" placeholder="••••••" maxlength="6" pattern="[0-9]{6}">
+          <div style="position:relative; display:flex; align-items:center;">
+            <input class="fi" id="a-pin" type="password" placeholder="••••••" maxlength="6" pattern="[0-9]{6}" style="padding-right: 40px;">
+            <button type="button" tabindex="-1" onclick="togglePassword('a-pin', 'eye-pin')" style="position:absolute; right:10px; color:var(--mut); display:flex; align-items:center; justify-content:center;"><i id="eye-pin" data-lucide="eye" style="width:18px;height:18px;"></i></button>
+          </div>
+          <div style="text-align:right; margin-top:var(--s1); display:none;" id="btn-forgot-pin-div"><button type="button" style="font-size:var(--xs); color:var(--pri); font-weight:500;" onclick="startForgotPin()" data-i18n="forgot_pin">Forgot PIN?</button></div>
+        </div>
+      </div>
+
+      <!-- Step 4: Reset Password -->
+      <div id="step-reset-pass" style="display:none">
+        <div class="fgrp">
+          <label class="fl" data-i18n="reset_password">Reset Password</label>
+          <div style="position:relative; display:flex; align-items:center;">
+            <input class="fi" id="a-new-pass" type="password" placeholder="Minimum 8 characters" minlength="8" style="padding-right: 40px;" data-i18n="enter_new_password">
+            <button type="button" tabindex="-1" onclick="togglePassword('a-new-pass', 'eye-new-pass')" style="position:absolute; right:10px; color:var(--mut); display:flex; align-items:center; justify-content:center;"><i id="eye-new-pass" data-lucide="eye" style="width:18px;height:18px;"></i></button>
+          </div>
+          <div class="fgrp" style="margin-top:var(--s1)">
+            <p style="font-size:var(--xs);color:var(--mut)" data-i18n="pass_hint">⚠️ Must contain an uppercase letter and a number.</p>
+          </div>
         </div>
       </div>
 
@@ -196,6 +218,19 @@ footer{text-align:center;padding:var(--s8);color:var(--mut);font-size:var(--xs);
 <script>
 var API = 'https://fintrack-backend-khaki.vercel.app'; // ← Ganti dengan URL Vercel kamu
 
+function togglePassword(inputId, iconId) {
+  var input = document.getElementById(inputId);
+  var icon = document.getElementById(iconId);
+  if (input.type === 'password') {
+    input.type = 'text';
+    icon.setAttribute('data-lucide', 'eye-off');
+  } else {
+    input.type = 'password';
+    icon.setAttribute('data-lucide', 'eye');
+  }
+  lucide.createIcons();
+}
+
 function toggleTheme(){
   var t = document.documentElement.getAttribute('data-theme');
   var next = t === 'dark' ? 'light' : 'dark';
@@ -221,48 +256,99 @@ function switchTab(mode) {
   document.getElementById('auth-err').classList.remove('show');
   document.getElementById('auth-ok').classList.remove('show');
   document.getElementById('m-auth').dataset.mode = mode;
+  document.getElementById('grp-pass').style.display = 'block';
+  document.getElementById('btn-forgot-pass-div').style.display = isLogin ? 'block' : 'none';
   
   // Reset steps
   document.getElementById('step-1').style.display = 'block';
   document.getElementById('step-otp').style.display = 'none';
   document.getElementById('step-pin').style.display = 'none';
+  document.getElementById('step-reset-pass').style.display = 'none';
   document.getElementById('a-email').required = true;
   document.getElementById('a-pass').required = true;
   document.getElementById('a-otp').required = false;
   document.getElementById('a-pin').required = false;
+  document.getElementById('a-new-pass').required = false;
   document.getElementById('a-otp').value = '';
   document.getElementById('a-pin').value = '';
+  document.getElementById('a-new-pass').value = '';
+  
+  document.getElementById('a-pass').type = 'password';
+  document.getElementById('eye-pass').setAttribute('data-lucide', 'eye');
+  document.getElementById('a-pin').type = 'password';
+  document.getElementById('eye-pin').setAttribute('data-lucide', 'eye');
+  if(document.getElementById('a-new-pass')) {
+    document.getElementById('a-new-pass').type = 'password';
+    document.getElementById('eye-new-pass').setAttribute('data-lucide', 'eye');
+  }
   
   tempToken = null;
   lucide.createIcons();
 }
 
+function startForgotPass() {
+  var errEl = document.getElementById('auth-err');
+  var okEl  = document.getElementById('auth-ok');
+  errEl.classList.remove('show'); okEl.classList.remove('show');
+  document.getElementById('m-auth').dataset.mode = 'forgot-pass';
+  document.getElementById('grp-pass').style.display = 'none';
+  document.getElementById('a-pass').required = false;
+  document.getElementById('auth-ttl').textContent = t('reset_password');
+  document.getElementById('auth-btxt').textContent = t('send_otp');
+  lucide.createIcons();
+}
+
+function startForgotPin() {
+  document.getElementById('m-auth').dataset.mode = 'forgot-pin';
+  document.getElementById('a-pin').required = false;
+  document.getElementById('auth-btn').click();
+}
 function setStep(step, desc) {
   document.getElementById('step-1').style.display = 'none';
   document.getElementById('step-otp').style.display = 'none';
   document.getElementById('step-pin').style.display = 'none';
+  document.getElementById('step-reset-pass').style.display = 'none';
+  
   document.getElementById('a-email').required = false;
   document.getElementById('a-pass').required = false;
   document.getElementById('a-otp').required = false;
   document.getElementById('a-pin').required = false;
+  document.getElementById('a-new-pass').required = false;
   
   if (step === 'otp') {
     document.getElementById('step-otp').style.display = 'block';
     document.getElementById('a-otp').required = true;
     document.getElementById('auth-btxt').textContent = t('verify_otp');
     document.getElementById('m-auth').dataset.mode = 'verify-otp';
+  } else if (step === 'otp-reset-pass') {
+    document.getElementById('step-otp').style.display = 'block';
+    document.getElementById('a-otp').required = true;
+    document.getElementById('auth-btxt').textContent = t('verify_otp');
+    document.getElementById('m-auth').dataset.mode = 'verify-reset-otp';
+  } else if (step === 'otp-reset-pin') {
+    document.getElementById('step-otp').style.display = 'block';
+    document.getElementById('a-otp').required = true;
+    document.getElementById('auth-btxt').textContent = t('verify_otp');
+    document.getElementById('m-auth').dataset.mode = 'verify-pin-otp';
   } else if (step === 'set-pin') {
     document.getElementById('step-pin').style.display = 'block';
     document.getElementById('a-pin').required = true;
     document.getElementById('pin-desc').textContent = t('pin_setup_msg');
     document.getElementById('auth-btxt').textContent = t('save_pin');
+    document.getElementById('btn-forgot-pin-div').style.display = 'none';
     document.getElementById('m-auth').dataset.mode = 'set-pin';
   } else if (step === 'verify-pin') {
     document.getElementById('step-pin').style.display = 'block';
     document.getElementById('a-pin').required = true;
     document.getElementById('pin-desc').textContent = t('pin_verify_msg');
     document.getElementById('auth-btxt').textContent = t('verify_pin');
+    document.getElementById('btn-forgot-pin-div').style.display = 'block';
     document.getElementById('m-auth').dataset.mode = 'verify-pin';
+  } else if (step === 'reset-pass') {
+    document.getElementById('step-reset-pass').style.display = 'block';
+    document.getElementById('a-new-pass').required = true;
+    document.getElementById('auth-btxt').textContent = t('reset_password');
+    document.getElementById('m-auth').dataset.mode = 'reset-pass';
   }
 }
 
@@ -289,13 +375,23 @@ async function submitAuth(e) {
     var payload = {};
     if (mode === 'login' || mode === 'register') {
       payload = { email: document.getElementById('a-email').value.trim(), password: document.getElementById('a-pass').value };
-    } else if (mode === 'verify-otp') {
+    } else if (mode === 'forgot-pass') {
+      payload = { email: document.getElementById('a-email').value.trim() };
+    } else if (mode === 'verify-otp' || mode === 'verify-reset-otp' || mode === 'verify-pin-otp') {
       payload = { temp_token: tempToken, otp_code: document.getElementById('a-otp').value };
+    } else if (mode === 'reset-pass') {
+      payload = { temp_token: tempToken, password: document.getElementById('a-new-pass').value };
     } else if (mode === 'set-pin' || mode === 'verify-pin') {
       payload = { temp_token: tempToken, pin: document.getElementById('a-pin').value };
+    } else if (mode === 'forgot-pin') {
+      payload = { temp_token: tempToken };
     }
 
-    var res  = await fetch(API + '/api/auth/' + mode, {
+    var url = '/api/auth/' + mode;
+    if (mode === 'forgot-pass') url = '/api/auth/forgot-password';
+    if (mode === 'reset-pass') url = '/api/auth/reset-password';
+    
+    var res  = await fetch(API + url, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
@@ -315,11 +411,35 @@ async function submitAuth(e) {
       setStep('otp');
       okEl.textContent = t('reg_success');
       okEl.classList.add('show');
+    } else if (mode === 'forgot-pass') {
+      tempToken = data.temp_token;
+      setStep('otp-reset-pass');
+      okEl.textContent = t('reg_success');
+      okEl.classList.add('show');
+    } else if (mode === 'forgot-pin') {
+      tempToken = data.temp_token;
+      setStep('otp-reset-pin');
+      okEl.textContent = t('reg_success');
+      okEl.classList.add('show');
     } else if (mode === 'verify-otp') {
       tempToken = data.temp_token;
       setStep('set-pin');
       okEl.textContent = t('email_verified');
       okEl.classList.add('show');
+    } else if (mode === 'verify-reset-otp') {
+      tempToken = data.temp_token;
+      setStep('reset-pass');
+    } else if (mode === 'verify-pin-otp') {
+      tempToken = data.temp_token;
+      setStep('set-pin');
+    } else if (mode === 'reset-pass') {
+      okEl.textContent = t('pass_reset_success');
+      okEl.classList.add('show');
+      setTimeout(() => switchTab('login'), 2000);
+      btn.disabled = false;
+      btn.innerHTML = '<i data-lucide="log-in"></i><span id="auth-btxt">' + t('login') + '</span>';
+      lucide.createIcons();
+      return;
     } else if (mode === 'login') {
       tempToken = data.temp_token;
       if (data.requires_set_pin) setStep('set-pin');
@@ -334,7 +454,11 @@ async function submitAuth(e) {
     errEl.classList.add('show');
   }
   btn.disabled = false;
-  btn.innerHTML = '<i data-lucide="log-in"></i><span id="auth-btxt">' + (mode==='login'?'Login':mode==='register'?'Register':origText) + '</span>';
+  var currentText = document.getElementById('auth-btxt').textContent;
+  if (currentText === t('processing')) {
+     currentText = origText;
+  }
+  btn.innerHTML = '<i data-lucide="log-in"></i><span id="auth-btxt">' + currentText + '</span>';
   lucide.createIcons();
 }
 (function(){

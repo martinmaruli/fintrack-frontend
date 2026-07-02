@@ -162,7 +162,13 @@ const translations = {
     init_balance: "Initial Balance (Rp)",
     recent_trx: "Recent Transactions",
     recent_act: "Recent activity",
-    no_trx: "No transactions yet"
+    no_trx: "No transactions yet",
+    forgot_password: "Forgot Password?",
+    forgot_pin: "Forgot PIN?",
+    reset_password: "Reset Password",
+    enter_new_password: "Enter new password",
+    send_otp: "Send OTP",
+    pass_reset_success: "Password successfully reset. Please login."
   },
   id: {
     // Auth & Navigation
@@ -327,7 +333,13 @@ const translations = {
     init_balance: "Saldo Awal (Rp)",
     recent_trx: "Riwayat Transaksi",
     recent_act: "Aktivitas terbaru",
-    no_trx: "Belum ada transaksi"
+    no_trx: "Belum ada transaksi",
+    forgot_password: "Lupa Password?",
+    forgot_pin: "Lupa PIN?",
+    reset_password: "Reset Password",
+    enter_new_password: "Masukkan password baru",
+    send_otp: "Kirim OTP",
+    pass_reset_success: "Password berhasil di-reset. Silakan login."
   }
 };
 

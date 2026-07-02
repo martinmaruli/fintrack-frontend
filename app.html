@@ -410,6 +410,7 @@ tbody tr:last-child td{border-bottom:none}
           <button class="pt" onclick="setPeriod('semua',this)" data-i18n="all">All</button>
         </div>
         <button class="btn bp bsm" onclick="openModalTrx()"><i data-lucide="plus"></i><span data-i18n="add_transaction">Add Transaction</span></button>
+        <button class="bic" onclick="toggleBalance()" aria-label="Toggle Balance" title="Show/Hide Balance"><i id="bal-ic" data-lucide="eye"></i></button>
         <button class="bic" onclick="toggleLanguage()" aria-label="Toggle language" title="Switch Language" style="display:flex;align-items:center;gap:4px">
           <i data-lucide="globe" style="width:18px;height:18px"></i> <span style="font-size:12px;font-weight:bold" id="lang-ind">EN</span>
         </button>
@@ -721,8 +722,16 @@ function getFiltered() {
 function sum(list,type){ var s=0; for(var i=0;i<list.length;i++) if(list[i].type===type) s+=list[i].amt; return s; }
 
 // ===== FORMAT =====
-function rp(n){ var neg=n<0,a=Math.abs(n),s='Rp '+a.toLocaleString('id-ID'); return neg?'-'+s:s; }
-function rpf(n){ return 'Rp '+Math.abs(n).toLocaleString('id-ID'); }
+var isBalanceHidden = localStorage.getItem('ft_hide_bal') === 'true';
+function toggleBalance() {
+  isBalanceHidden = !isBalanceHidden;
+  localStorage.setItem('ft_hide_bal', isBalanceHidden);
+  document.getElementById('bal-ic').setAttribute('data-lucide', isBalanceHidden ? 'eye-off' : 'eye');
+  lucide.createIcons();
+  render();
+}
+function rp(n){ if(isBalanceHidden) return 'Rp ••••••'; var neg=n<0,a=Math.abs(n),s='Rp '+a.toLocaleString('id-ID'); return neg?'-'+s:s; }
+function rpf(n){ if(isBalanceHidden) return 'Rp ••••••'; return 'Rp '+Math.abs(n).toLocaleString('id-ID'); }
 function fd(s){ 
   if(!s)return'-'; 
   var p=s.split('T')[0].split('-');
@@ -908,6 +917,15 @@ function onTypeChange() {
   sel.innerHTML = cats.map(function(c){return '<option value="'+c+'">'+c+'</option>';}).join('') + '<option value="custom">'+t('custom_cat')+'</option>';
   if (cats.includes(prev) || prev === 'custom') sel.value = prev;
   else sel.value = cats[0];
+  
+  var dateInput = document.getElementById('f-date');
+  if (v === 'income' || v === 'expense') {
+    dateInput.max = today;
+    if (dateInput.value > today) dateInput.value = today;
+  } else {
+    dateInput.removeAttribute('max');
+  }
+  
   onCatChange();
 }
 function onCatChange(){ var c=document.getElementById('f-cat').value; document.getElementById('f-custom-cat-grp').style.display=c==='custom'?'flex':'none'; }
@@ -1006,8 +1024,8 @@ function render(){
   renderDashTable('tb-dash', sortedDB.slice(0,8));
   renderSimple('tb-i', sortedDB.filter(function(t){return t.type==='income';}));
   renderSimple('tb-e', sortedDB.filter(function(t){return t.type==='expense';}));
-  renderCalon('tb-cp', sortedDB.filter(function(t){return t.type==='projected_income';}));
-  renderCalon('tb-ck', sortedDB.filter(function(t){return t.type==='projected_expense';}));
+  renderCalon('tb-cp', DB.filter(function(t){return t.type==='projected_income';}));
+  renderCalon('tb-ck', DB.filter(function(t){return t.type==='projected_expense';}));
   renderReport(sortedDB, mi, me, bal, cm, ck, proj);
   lucide.createIcons();
 }
@@ -1250,6 +1268,7 @@ window.addEventListener('languageChanged', function() {
 });
 document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('lang-ind').textContent = currentLang.toUpperCase();
+  document.getElementById('bal-ic').setAttribute('data-lucide', isBalanceHidden ? 'eye-off' : 'eye');
 });
 function toggleTheme(){
   var h=document.documentElement;
